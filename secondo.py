@@ -147,12 +147,12 @@ for i in range(I):#for each event
     np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
     outfile.close()
     
-#    plt.figure(figsize = (10,8))
-#    plt.loglog(freq_list, amp, color='cornflowerblue')
-#    plt.title('event: ' + eventidlist[i])
-#    plt.xlabel('frequency (Hz)')
-#    plt.ylabel('velocity spectrum')
-#    plt.show()
+    plt.figure(figsize = (10,8))
+    plt.loglog(freq_list, amp, color='cornflowerblue')
+    plt.title('event: ' + eventidlist[i])
+    plt.xlabel('frequency (Hz)')
+    plt.ylabel('velocity spectrum')
+    plt.show()
     
 for i in range(J):#for each station
     #make each row into an array
@@ -164,12 +164,12 @@ for i in range(J):#for each station
     outfile.close()
     
     
-#    plt.figure(figsize = (10,8))
-#    plt.loglog(freq_list, amp, color='cornflowerblue')
-#    plt.title('station: ' + stationlist[i])
-#    plt.xlabel('frequency (Hz)')
-#    plt.ylabel('velocity spectrum')
-#    plt.show()
+    plt.figure(figsize = (10,8))
+    plt.loglog(freq_list, amp, color='cornflowerblue')
+    plt.title('station: ' + stationlist[i])
+    plt.xlabel('frequency (Hz)')
+    plt.ylabel('velocity spectrum')
+    plt.show()
 
 
 

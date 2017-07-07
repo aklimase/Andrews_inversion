@@ -47,7 +47,7 @@ event_dir = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spect
 station_dir = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spectra/'
 station_files = glob.glob(station_dir + '*.out')
 
-for i in range(len(record_paths)):  ##for every record
+for i in range(15, 25):  ##for every record
     #North component
     base = path.basename(record_paths[i])
     eventid = base.split('.')[0]
@@ -62,31 +62,29 @@ for i in range(len(record_paths)):  ##for every record
     #record spectra
     record_data = np.genfromtxt(record_paths[i], dtype = float, comments = '#', delimiter = None, usecols = (0,1))#only read in first two cols
     f_bins = record_data[:,0]
+    #####################################
+    #power spectra so take square root
     record_spec = np.sqrt(record_data[:,1])
     #event spectra
     event_data = np.genfromtxt(event_dir + eventid + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
     event_spec = event_data[:,1]
     
+    station_data = np.genfromtxt(station_dir + station + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
+    station_spec = station_data[:,1]
     
-#    #plot the station spectra
-#    f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
-#    ax1.plot(x, y)
-#    ax1.set_title('Sharing both axes')
-#    ax2.scatter(x, y)
-#    ax3.scatter(x, 2 * y ** 2 - 1, color='r')
-## Fine-tune figure; make subplots close to each other and hide x ticks for
-## all but bottom plot.
-#f.subplots_adjust(hspace=0)
-#plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
-
-
-
-
-
-
-#plt.figure(figsize = (10,8))
-#plt.loglog(freq_list, amp, color='cornflowerblue')
-#plt.title('station: ' + stationlist[i])
-#plt.xlabel('frequency (Hz)')
-#plt.ylabel('velocity spectrum')
-#plt.show()
+    
+    #plot the station spectra
+    plt.figure(figsize = (12,16))
+    plt.subplot(311)
+    plt.title('record ' + base, fontsize = 15)
+    plt.loglog(f_bins, record_spec)
+    plt.ylim(10**(-10), 10**(0))
+    plt.subplot(312)
+    plt.title('event ' +  eventid, fontsize = 15)
+    plt.loglog(f_bins, event_spec, color = 'green')
+    plt.ylim(10**(-10), 10**(0))
+    plt.subplot(313)
+    plt.title('station ' + station, fontsize = 15)
+    plt.loglog(f_bins, station_spec, color='r')
+    plt.ylim(10**(-10), 10**(0))
+    plt.show()

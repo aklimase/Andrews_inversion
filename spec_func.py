@@ -3,8 +3,12 @@
 """
 Created on Mon Jun 26 13:37:49 2017
 
-@author: escuser
+@author: escuser\\
+
+
 """
+
+
 
 
 def cut_swave(infile, cutfile, t1, t2):
@@ -14,6 +18,7 @@ def cut_swave(infile, cutfile, t1, t2):
     from obspy import read    
     import dread
     import datetime
+    from obspy.core.utcdatetime import UTCDateTime
     
     velocity = 3.5 #km/s
     
@@ -25,13 +30,24 @@ def cut_swave(infile, cutfile, t1, t2):
     origin_sec = tr.stats.sac.nzsec
     origin_msec = tr.stats.sac.nzmsec
     
+#    print(tr.stats.sac.nzhour)
+    
+#    print("event", origin_hour, origin_min, origin_sec, origin_msec)
+    
     trace_starttime = tr.stats.starttime
+#    print(trace_starttime)
+#    print(tr.stats.endtime)
 
     origin_time = (origin_hour*60*60 + origin_min*60 + origin_sec + origin_msec/1000.)# in seconds after start of day
-    trace_starttime_sec = tr.stats.sac.b #sec
+#    trace_starttime_sec = tr.stats.sac.b #sec
+    trace_starttime_sec = trace_starttime.hour*60*60 + trace_starttime.minute*60 + trace_starttime.second
+    
+#    print("origin: ", origin_time)
+#    print("start:", trace_starttime_sec)
     
     #difference between origin time and when the trace starts
     delta =  origin_time - trace_starttime_sec # in sec
+#    print(delta)
     origin_time_UTC = trace_starttime + datetime.timedelta(seconds=delta)#convert origin time to UTC
     
     evlon =  tr.stats.sac.evlo #deg
@@ -45,11 +61,23 @@ def cut_swave(infile, cutfile, t1, t2):
     dist =  dread.compute_rrup(evlon, evlat, evdepth, stlon, stlat, stdepth) #in km
     
     s_travel_time = dist/velocity # in sec
+#    print(s_travel_time)
     cuttime = origin_time_UTC + datetime.timedelta(seconds = s_travel_time)#add travel time or utc origin time
+#    print(cuttime)
+    start = cuttime - datetime.timedelta(seconds = t1)
+    end = cuttime + datetime.timedelta(seconds = t2)
+    start = str(start)
+    end = str(end)
+#    print(start, end)
+#    print(cuttime - datetime.timedelta(seconds = t1),cuttime + datetime.timedelta(seconds = t2))
+#    print(tr.slice(cuttime - datetime.timedelta(seconds = t1),cuttime + datetime.timedelta(seconds = t2), nearest_sample=True))
+#    cut_trace = tr.slice(cuttime - datetime.timedelta(seconds = t1),cuttime + datetime.timedelta(seconds = t2), nearest_sample=True)#make a new trace by slicing
+    cut_trace = tr.slice(UTCDateTime(start), UTCDateTime(end), nearest_sample=True)#make a new trace by slicing
+#    print(tr.data)
+#    print(cut_trace)
+    cut_trace.write(cutfile, format = 'SAC')    
 
-    cut_trace = tr.slice(cuttime - datetime.timedelta(seconds = t1),cuttime + datetime.timedelta(seconds = t2), nearest_sample=True)#make a new trace by slicing
-
-    cut_trace.write(cutfile, format = 'sac')
+    
 
 def bin_spec(data, frequency, num_bins):
     import numpy as np
@@ -88,22 +116,22 @@ def bin_spec(data, frequency, num_bins):
             binned_data[i] = np.mean(data[lb:ub])
     
     #make plot to check
-    plt.figure(figsize = (10,8))
-    plt.loglog(frequency, data, color='cornflowerblue', zorder = 1)#linear so plot in logspace
-    
-    for i in range(0,l):
-        x1 = frequency[int(lower[i])]
-        x2 = frequency[int(upper[i])]
-        y1 = binned_data[i]
-        y2 = binned_data[i]
-        plt.plot((x1,x2),(y1,y2), color = 'red')
-        
-    plt.scatter(c, binned_data, color = 'black', zorder = 2, marker = 'o')
-    plt.plot(c, binned_data, color = 'black')
-    plt.xlabel('frequency (Hz)')
-    plt.ylabel('velocity spectrum (NE)')
-        
-    plt.show()
+#    plt.figure(figsize = (10,8))
+#    plt.loglog(frequency, data, color='cornflowerblue', zorder = 1)#linear so plot in logspace
+#    
+#    for i in range(0,l):
+#        x1 = frequency[int(lower[i])]
+#        x2 = frequency[int(upper[i])]
+#        y1 = binned_data[i]
+#        y2 = binned_data[i]
+#        plt.plot((x1,x2),(y1,y2), color = 'red')
+#        
+#    plt.scatter(c, binned_data, color = 'black', zorder = 2, marker = 'o')
+#    plt.plot(c, binned_data, color = 'black')
+#    plt.xlabel('frequency (Hz)')
+#    plt.ylabel('velocity spectrum (NE)')
+#        
+#    plt.show()
     
     return c, binned_data
 

@@ -21,19 +21,20 @@ from obspy import read
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 box = 'Riverside_FRD_RDM'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 
-uncorrpaths = glob.glob(boxpath + '/uncorrected/Event_*/*.SAC')
-corrfilepaths = glob.glob(boxpath + '/corrected/Event_*/*.SAC')
-cutfilepaths = glob.glob(boxpath + '/cutdata_s/Event_*/*.SAC')
+uncorrpaths = glob.glob(boxpath + '/uncorrected/Event_*/AZ*.SAC')
+corrfilepaths = glob.glob(boxpath + '/corrected/Event_*/AZ*.SAC')
+cutfilepaths = glob.glob(boxpath + '/cutdata_s/Event_*/AZ*.SAC')
 
 #cutfilepath = boxpath + '/cutdata_s'#full path for only specified channel
 #icorrfilepath = boxpath + '/icorrdata'#full path for only specified channel
 
 
-for i in range(0,10):#in this case event paths are all sac files
+for i in range(len(cutfilepaths)):#in this case event paths are all sac files
     base = path.basename(uncorrpaths[i])
     network = base.split('_')[0]
     station = base.split('_')[1]
@@ -42,38 +43,64 @@ for i in range(0,10):#in this case event paths are all sac files
     uncorrfile = uncorrpaths[i]
     corrfile = corrfilepaths[i]
     cutfile = cutfilepaths[i]
-
-    fig = plt.figure(figsize = (25,20))
-    fig.text(0.04, 0.5, 'Velocity amplitude (m/s)', va='center', rotation='vertical', fontsize = 15)
-    fig.suptitle(base, fontsize = 20)
+    
     #read in traces
     stream = read(uncorrfile)
     tr = stream[0]
-    data = tr.data
-    
-    plt.subplot(3,1,1)
-    plt.plot(data, color='black')
-    plt.title('uncorrected')
-    plt.xlim(0, len(data))
+    data1 = tr.data
     
     stream = read(corrfile)
     tr = stream[0]
-    data = tr.data
+    data2 = tr.data
+    mag = str(tr.stats.sac.mag)
     
-    plt.subplot(3,1,2)
-    plt.plot(data, color='black')
+
+    fig = plt.figure(figsize = (25,20))
+    fig.text(0.04, 0.5, 'Velocity amplitude', va='center', rotation='vertical', fontsize = 15)
+    title = base + ' magnitude ' + mag
+    fig.suptitle(title, fontsize = 20)
+
+    plt.subplot(3,1,1)
+    plt.plot(data1, color='black')
+    plt.title('uncorrected')
+    plt.ylabel('counts')
+    plt.xlim(0, len(data1))
+    
+#    stream = read(corrfile)
+#    tr = stream[0]
+#    data2 = tr.data
+#    mag = tr.stats.sac.mag
+#    print(mag)
+    
+    plt.subplot(3,1,3)
+    plt.plot(data2, color='black')
     plt.title('corrected')
-    plt.xlim(0, len(data))
+    plt.ylabel('m/s')
+    plt.xlim(0, len(data2))
     
     stream = read(cutfile)
     tr = stream[0]
-    data = tr.data
+    data3 = tr.data
     
-    plt.subplot(3,1,3)
-    plt.plot(data, color='black')
+    plt.subplot(3,1,2)
+    plt.plot(data3, color='black')
     plt.title('cut')
-    plt.xlim(0, len(data))
-    plt.xlabel('sample number', fontsize = 15)
+    plt.ylabel('counts')
+    plt.xlim(0, len(data3))
     
-
+#    resp = data3/data2
+#    print(min(resp), max(resp))
+#    plt.subplot(4,1,4)
+#    plt.plot(resp, color='black')
+#    plt.title('response')
+#    plt.xlim(0, len(data3))
+#    plt.xlabel('sample number', fontsize = 15)
+    
+    print 'saving image: ' + boxpath + '/plots/' + base.split('.')[0] + '.png'
     plt.savefig(boxpath + '/plots/' + base.split('.')[0] + '.png')
+    plt.close()
+    
+    
+    
+    
+    

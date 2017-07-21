@@ -44,6 +44,7 @@ nyquistf = 50
 starttime = '1998-01-01T00:00.000'
 endtime = '2599-12-31T23:59.000'
 
+
 # Pre-filter for instrument response correction:
 #   The last number should be the nyquist frequency; second to last reduces
 #   the filter towards the nyquist; first two are for the "water level"
@@ -52,48 +53,77 @@ prefilt = (0.0,0.001,0.7*nyquistf,nyquistf)
 
 
 #boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/Riverside_FRD_RDM'
-boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
-eventpaths = glob.glob(boxpath + '/cutdata_s/*.AZ.*.' + channel + '.sac')#full path for only specified channel
+#boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
+#eventpaths = glob.glob(boxpath + '/cutdata_s/*.AZ.*.' + channel + '.sac')#full path for only specified channel
 
-events = []
-for i in range(len(eventpaths)):
-    #events.append(eventpaths[i].split('/')[9])#take last part of path aka each folder name
-    eventid = (eventpaths[i].split('/')[7]).split('.')[0]
-    if eventid not in events:
-        events.append(eventid)
-print(len(events))
+
+
+box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_SWS_ERR'
+#box = 'Riverside_FRD_RDM'
+#box = 'Salton_Trough_SWS_ERR'
+
+boxpath = '/Users/escuser/project/boxes/' + box
+event_dirs = glob.glob(boxpath + '/cutdata_s/Event_*')
+
+eventpaths = glob.glob(boxpath + '/cutdata_s/Event_*/*.SAC')#full path
+print 'Number of files: ', len(eventpaths)
+
+cut_dir = boxpath + '/cutdata_s/'
+
+events = [os.path.basename(x) for x in event_dirs]
+
+#make a directory for each event
+for i in range(len(events)):
+    if not path.exists(cut_dir + '/' + events[i]):
+        os.makedirs(cut_dir + '/' + events[i])
+
+
+
+
+
+#
+#events = []
+#for i in range(len(eventpaths)):
+#    #events.append(eventpaths[i].split('/')[9])#take last part of path aka each folder name
+#    eventid = (eventpaths[i].split('/')[7]).split('.')[0]
+#    if eventid not in events:
+#        events.append(eventid)
+#print(len(events))
 
 ##read in all files to find networks and stations
-networklist = []
-stationlist = []
+#networklist = []
+l = []
 
      
 for i in range(len(eventpaths)):
-    #get the path of every file in the event directory and split into network.staation, and channel
+    #get the path of every file in the event directory and split into network.station, and channel
     base = path.basename(eventpaths[i])
-    network = base.split('.')[1]
-    station = base.split('.')[2]
+    network = base.split('_')[0]
+    station = base.split('_')[1]
+    pair = network + '.' + station
     #if network and station not part of the list yet add
-    if network not in networklist:
-        networklist.append(network)
-    if station not in stationlist:
-        stationlist.append(station)
-print(networklist)
-print(len(stationlist))
+#    if network not in networklist:
+#        networklist.append(network)
+    if pair not in l:
+        l.append(network + '.' + station)
+#print(networklist)
+print(l)
 
 #make response files in response directory for each combo of networks and stations
 #response_path = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/response_files'
-response_path = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/response_files'
+response_path = boxpath + '/respfiles'
 
 #makes a response file for each station and channel
 #for network in networklist:
-#    for station in stationlist:
-#        respfile = response_path + '/' + network + '.' + station + '.' + channel + '.resp'
-#        wf.download_response(network,station,location,channel,starttime,endtime,respfile)
+for i in range(len(l)):
+    respfile = response_path + '/' + l[i] + '.' + channel + '.resp'
+    network, station = l[i].split('.')
+    wf.download_response(network,station,location,channel,starttime,endtime,respfile)
 
         
 #read in all uncorrected sac files and loop through and for each look in response directory, then remove response and save to directory of corrected files
-icorr_path = boxpath + '/icorrdata'
+icorr_path = boxpath + '/corrected'
 #make a directory for each event
 for i in range(len(events)):
     if not path.exists(icorr_path + '/' + events[i]):
@@ -102,10 +132,11 @@ for i in range(len(events)):
 #read in cut data, rmean and rtrend, find .resp file, correct and add to icorr dir
 for i in range(len(eventpaths)):#in this case event paths are all sac files
     base = path.basename(eventpaths[i])
-    eventid = base.split('.')[0]
-    network = base.split('.')[1]
-    station = base.split('.')[2]
-    full_channel = base.split('.')[3]
+    print(base)
+    folder = eventpaths[i].split('/')[-2]
+    network = base.split('_')[0]
+    station = base.split('_')[1]
+    full_channel = base.split('_')[2]
     #find response file
     respfile = response_path + '/' + network + '.' + station + '.' + channel + '.resp'
     #first rmean and rtrend
@@ -116,7 +147,7 @@ for i in range(len(eventpaths)):#in this case event paths are all sac files
     #rewrite to a sac file
     tr.write('temp.sac', format = 'sac')
     sacfile = 'temp.sac'
-    icorr_sacfile = icorr_path + '/' + eventid + '.' + network + '.' + station + '.' + full_channel + '.sac'
+    icorr_sacfile = icorr_path + '/' + folder + '/'+ base
     print(icorr_sacfile)
     #uncorrected_sac_file,resp_file,corrected_sac_file,water_level_bds,resp_unit
     wf.remove_response(sacfile,respfile,icorr_sacfile,prefilt,tsunit)#prefilt values for HH

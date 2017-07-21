@@ -22,15 +22,15 @@ location = '*'
 tsunit = 'VEL'
 channel = 'HH*'
 
-#box = 'Imperial_Valley_PFO_TPFO_PMD'
+box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
-box = 'Salton_Trough_SWS_ERR'
+#box = 'Salton_Trough_SWS_ERR'
 
 boxpath = '/Users/escuser/project/boxes/' + box
-event_dirs = glob.glob(boxpath + '/corrected/Event_*')
+event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
 
-eventpaths = glob.glob(boxpath + '/corrected/Event_*/*.SAC')#full path
+eventpaths = glob.glob(boxpath + '/uncorrected/Event_*/*.SAC')#full path
 print 'Number of files: ', len(eventpaths)
 
 cut_dir = boxpath + '/cutdata_s/'

@@ -25,50 +25,29 @@ import dread
 from obspy import read  
 from spec_func import L1norm
 
-#read in anza_event_catalog.txt
-catalog = '/Users/escuser/Documents/Alexis_Data/anza_event_catalog.txt'
 
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_SWS_ERR'
+box = 'Riverside_FRD_RDM'
+#box = 'Salton_Trough_SWS_ERR'
+print box
 
-eventid = []
-mag = []
+boxpath = '/Users/escuser/project/boxes/' + box
 
-cat = np.genfromtxt(catalog, dtype = str, comments = '#', delimiter = '|')
-eventid.append(cat[:,0])
-eventid_string = eventid[0]
-mag.append(cat[:,10])
-mag_string = mag[0]
+record_paths = glob.glob(boxpath + '/record_spectra/Event_*/*.out')#full path for only specified channel
 
-print(eventid_string)
+event_dir = boxpath + '/secondo/'
+event_files = glob.glob(event_dir + '*.out')
 
-## Convert eventid_string to a float:
-#eventid_cat = np.zeros(len(eventid_string))
-eventid_cat = []
-#mag_cat = np.zeros(len(eventid_string))
-
-for eventi in range(len(eventid_string)):
-    eventid_i = eventid_string[eventi].split('ci')[1]
-    eventid_cat.append(eventid_i)
-#    mag_cat[eventi] = float(mag_string[eventi])
-print(eventid_cat)
-
-#remove the ci from the name
-
-boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
-
-record_paths = glob.glob('/Users/escuser/Documents/Alexis_Data/cut_sac_files/record_spectra/*.*.out')#full path for only specified channel
-
-#record_paths = glob.glob('/Users/escuser/Documents/Alexis_Data/cut_sac_files/record_spectra/10891517.*.out')#full path for only specified channel
-#record_paths.extend(glob.glob('/Users/escuser/Documents/Alexis_Data/cut_sac_files/record_spectra/14598996.*.out'))#full path for only specified channel
-
-
-event_dir = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spectra/'
-
-station_dir = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spectra/'
+station_dir = boxpath + '/secondo/'
 station_files = glob.glob(station_dir + '*.out')
+
+print record_paths
 
 L1_norm = L1norm(record_paths)
 L1_norm_mean = np.mean(L1_norm, axis=0)
 L1_norm_std = np.std(L1_norm, axis=0)
+
 
 for i in range(len(record_paths)):  ##for every record
 #for i in range(5):  ##for every record
@@ -78,10 +57,17 @@ for i in range(len(record_paths)):  ##for every record
 #    network = base.split('.')[1]
 #    station = base.split('.')[2]
     
-    eventid, network, station, channel, extn = base.split('.')
-    #read in raw data
+#    eventid, network, station, channel, extn = base.split('.')
+    
+#    record = record_paths[i]
+    network, station, channel, loc = base.split('_')[0:4]
+    yyyy, month, day, hh, mm, ss = base.split('_')[4:]
+    ss = ss.split('.')[0]
+    eventid = yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss    
+    
+    #read in raw data for record info
     #correct for distance
-    raw_file = boxpath + '/rawdata/' + eventid + '.' + network + '.' +  station + '.HHN.sac'
+    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
     
@@ -98,9 +84,9 @@ for i in range(len(record_paths)):  ##for every record
     dist = dist*100000
     
     #look up event info and print
-    for j in range(len(eventid_cat)):
-        if eventid_cat[j] == eventid:
-            print('event: ' + eventid + '   magnitude: ' + mag_string[j])
+#    for j in range(len(eventid_cat)):
+#        if eventid_cat[j] == eventid:
+#            print('event: ' + eventid + '   magnitude: ' + mag_string[j])
 
 
     #record spectra
@@ -142,4 +128,5 @@ for i in range(len(record_paths)):  ##for every record
     plt.legend(loc=1, borderaxespad=0.)
     plt.xlabel('Frequency (Hz)', fontsize = 15)
     plt.savefig(boxpath + '/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
+    plt.close()
 #    plt.show()

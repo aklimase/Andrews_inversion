@@ -28,7 +28,7 @@ from spec_func import bin_spec
 #boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/Riverside_FRD_RDM'
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 boxpath = '/Users/escuser/project/boxes/Riverside_FRD_RDM'
-event_dirs = glob.glob(boxpath + '/cutdata_s/Event_*')
+event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 
 events = []
 for i in range(len(event_dirs)):
@@ -47,13 +47,13 @@ for i in range(len(events)):
 #for i in range(53,55):
 for i in range(len(events)):
 #    event = recordpaths_N.split('/')[-2]#event dir second to last item in path
-    recordpaths_N = glob.glob(boxpath + '/cutdata_s/Event_*/*_*_HHN*.SAC')#full path for only specified channel
-    recordpaths_E = glob.glob(boxpath + '/cutdata_s/Event_*/*_*_HHE*.SAC')#full path for only specified channel
-    datetime = events[i][6:]
-    print 'doing event: '+ datetime
+    event = events[i][6:]
+    recordpaths_N = glob.glob(boxpath + '/corrected/Event_' + event +'/*_*_HHN*.SAC')#full path for only specified channel
+    recordpaths_E = glob.glob(boxpath + '/corrected/Event_' + event + '/*_*_HHE*.SAC')#full path for only specified channel
 #    files = glob.glob(event_dirs[i] + '/*.SAC')
     for j in range(len(recordpaths_N)):
         #North component
+        print 'binning and fft of event: '+ event
         base_N = path.basename(recordpaths_N[j])
         base_E = path.basename(recordpaths_E[j])
     #    eventid = base_N.split('.')[0]
@@ -91,7 +91,7 @@ for i in range(len(events)):
         bins, binned_data = bin_spec(data_NE, freq, num_bins = 50)
     
         ##write to file
-        outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + datetime + '.out', 'w')
+        outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + event + '.out', 'w')
         data = np.array([bins, binned_data])
     
         data = data.T

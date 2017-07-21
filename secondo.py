@@ -28,15 +28,20 @@ import dread
 #should be binned frequencies and amplitudes
 #make list of records and the corresponding events and stations
 
-boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_SWS_ERR'
+box = 'Riverside_FRD_RDM'
+#box = 'Salton_Trough_SWS_ERR'
+
+boxpath = '/Users/escuser/project/boxes/' + box
+
+#boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #record_path = glob.glob(boxpath + '/record_spectra/*.AZ.*.out')
 #print 'Number of records: ', len(record_path)
 
-record_path = glob.glob(boxpath + '/record_spectra/10891517.*.out')#full path for only specified channel
-record_path.extend(glob.glob(boxpath + '/record_spectra/14598996.*.out'))#full path for only specified channel
+record_path = glob.glob(boxpath + '/record_spectra/Event_*/*.out')#full path for only specified channel
+#record_path.extend(glob.glob(boxpath + '/record_spectra/14598996.*.out'))#full path for only specified channel
 print 'Number of records: ', len(record_path)
-
-constraint = 'KNW'
 
 #read in all files to find networks and stations
 stationlist = []
@@ -53,12 +58,16 @@ record_spec = []
 ## read in the uncut sac files and get the distances between source and station
 
 for i in range(len(record_path)):
-    record = (record_path[i].split('/')[7])
+    record = (record_path[i].split('/')[-1])
     base = path.basename(record)
-    eventid, network, station, channel, extn = base.split('.')
-    #read in raw data
+    network, station, channel, loc = base.split('_')[0:4]
+    yyyy, month, day, hh, mm, ss = base.split('_')[4:]
+    ss = ss.split('.')[0]
+    eventid = yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss
+    #read in uncorrected data for header info
     #correct for distance
-    raw_file = boxpath + '/rawdata/' + eventid + '.' + network + '.' +  station + '.HHN.sac'
+    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    print(raw_file)
     stream = read(raw_file)
     tr = stream[0]
     
@@ -108,9 +117,12 @@ index_matrix = [[0 for j in range(3)] for i in range(rows)]
 
 #for i in range(len(records)):
 for i in range(rows):
-    record = (record_path[i].split('/')[7])
+    record = record_path[i].split('/')[-1]
     base = path.basename(record)
-    eventid, network, station, channel, extn = base.split('.')
+    network, station, channel, loc = base.split('_')[0:4]
+    yyyy, month, day, hh, mm, ss = base.split('_')[4:]
+    ss = ss.split('.')[0]
+    eventid = yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss
     #make a tuple of record, event, station so indices can be assigned
     index_matrix[i] = [base, eventidlist.index(eventid), stationlist.index(station)]
 
@@ -171,7 +183,7 @@ print(event.shape, station.shape)
 #now event has the dim of events x frequency bins
 
 #write an output file for each event and station
-outfile_path = boxpath + '/test_events'
+outfile_path = boxpath + '/secondo'
 
 
 for i in range(I):#for each event
@@ -189,6 +201,8 @@ for i in range(I):#for each event
 #    plt.xlabel('frequency (Hz)')
 #    plt.ylabel('velocity spectrum cm/s')
 #    plt.show()
+#    plt.savefig(outfile_path + '/' + eventidlist[i] + '.png')
+
 #    
 for i in range(J):#for each station
     #make each row into an array
@@ -206,9 +220,13 @@ for i in range(J):#for each station
 #    plt.xlabel('frequency (Hz)')
 #    plt.ylabel('velocity spectrum cm/s')
 #    plt.show()
+#    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
+
 
 ########################################################################
-constraint_file = boxpath + '/test_events/' + constraint + '.out'
+constraint = 'FRD'
+
+constraint_file = boxpath + '/secondo/' + constraint + '.out'
 data = np.genfromtxt(constraint_file)
 con_spec = data.T[1] #second col
 

@@ -144,41 +144,48 @@ def L1norm(record_paths):
     N = len(record_paths)
     L1  = np.zeros((N, 50)) #50 bands, number of recordings
     for i in range(N):
-    #for the list of records compute L2 norm in each f band
-            base = path.basename(record_paths[i])
-            eventid, network, station, channel, extn = base.split('.')
-            raw_file = '/Users/escuser/Documents/Alexis_Data/cut_sac_files/rawdata/' + eventid + '.' + network + '.' +  station + '.HHN.sac'
-            event_dir =  '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spectra/'
-            station_dir =  '/Users/escuser/Documents/Alexis_Data/cut_sac_files/event_site_spectra/'
-            stream = read(raw_file)
-            tr = stream[0]
+    #for the list of records compute L1 norm in each f band
+        base = path.basename(record_paths[i])
+        print(record_paths[i])
+        box = record_paths[i].split('/')[5]
+        network, station, channel, loc = base.split('_')[0:4]
+        yyyy, month, day, hh, mm, ss = base.split('_')[4:]
+        ss = ss.split('.')[0]
+        eventid = yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss    
 
-            evlon =  tr.stats.sac.evlo #deg
-            evlat =  tr.stats.sac.evla #deg
-            evdepth = tr.stats.sac.evdp #km
-            stlon = tr.stats.sac.stlo #deg
-            stlat = tr.stats.sac.stla #deg
-            stdepth = tr.stats.sac.stdp #km
+        raw_file = '/Users/escuser/project/boxes/' + box + '/uncorrected/Event_' + eventid + '/' + network + '_' +  station + '_HHN_' + loc + '_' + eventid + '.SAC'
+        event_dir =  '/Users/escuser/project/boxes/' + box + '/secondo/'
+        station_dir =  '/Users/escuser/project/boxes/' + box + '/secondo/'
+        
+        stream = read(raw_file)
+        tr = stream[0]
 
-            #find distance between event and station
-            dist =  dread.compute_rrup(evlon, evlat, evdepth, stlon, stlat, stdepth) #in km
-            #km to cm
-            dist = dist*100000
-            #record spectra
-            record_data = np.genfromtxt(record_paths[i], dtype = float, comments = '#', delimiter = None, usecols = (0,1))#only read in first two cols
-            record_spec = record_data[:,1]*dist
+        evlon =  tr.stats.sac.evlo #deg
+        evlat =  tr.stats.sac.evla #deg
+        evdepth = tr.stats.sac.evdp #km
+        stlon = tr.stats.sac.stlo #deg
+        stlat = tr.stats.sac.stla #deg
+        stdepth = tr.stats.sac.stdp #km
 
-            #event spectra
-            event_data = np.genfromtxt(event_dir + eventid + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
-            event_spec = event_data[:,1]
-            #station spectra
-            station_data = np.genfromtxt(station_dir + station + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
-            station_spec = station_data[:,1]
-            
-            calc_record_spec = station_spec*event_spec
-            residual = (record_spec - calc_record_spec)
-            #set recording row equal to residual array
-            L1[i:,] = residual
+        #find distance between event and station
+        dist =  dread.compute_rrup(evlon, evlat, evdepth, stlon, stlat, stdepth) #in km
+        #km to cm
+        dist = dist*100000
+        #record spectra
+        record_data = np.genfromtxt(record_paths[i], dtype = float, comments = '#', delimiter = None, usecols = (0,1))#only read in first two cols
+        record_spec = record_data[:,1]*dist
+
+        #event spectra
+        event_data = np.genfromtxt(event_dir + eventid + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
+        event_spec = event_data[:,1]
+        #station spectra
+        station_data = np.genfromtxt(station_dir + station + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
+        station_spec = station_data[:,1]
+        
+        calc_record_spec = station_spec*event_spec
+        residual = (record_spec - calc_record_spec)
+        #set recording row equal to residual array
+        L1[i:,] = residual
     return L1
             
 

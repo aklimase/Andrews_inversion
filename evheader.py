@@ -18,15 +18,16 @@ from obspy import read
 #from obspy import core.utcdatetime
 
 #box = 'Riverside_FRD_RDM'
-box = 'Salton_Trough_SWS_ERR'
+#box = 'Salton_Trough_SWS_ERR'
+box = 'Imperial_Valley_PFO_TPFO_PMD'
 
 boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/' + box
-event_dirs = glob.glob(boxpath + '/corrected/Event_*')
+event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
 
 localdir = '/Users/escuser/project'
 
 #read in catalog file
-catalog = localdir + '/Salton_Trough_M2.5_USGS_Catalog.txt'
+catalog = localdir + '/Imperial_Valley_M2.5_USGS_Catalog.txt'
 
 time_cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1])
 #need to truncate milliseconds
@@ -40,8 +41,8 @@ for i in range(len(event_dirs)):
 #make event directories within corrected local data
 #make a directory for each event
 for i in range(len(events)):
-    if not path.exists(localdir + '/boxes/' + box + '/corrected/' + events[i]):
-        os.makedirs(localdir + '/boxes/' + box + '/corrected/' + events[i])
+    if not path.exists(localdir + '/boxes/' + box + '/uncorrected/' + events[i]):
+        os.makedirs(localdir + '/boxes/' + box + '/uncorrected/' + events[i])
 
 
 
@@ -70,4 +71,4 @@ for i in range(len(events)):
         tr.stats.sac.nzmin = mm
         tr.stats.sac.nzsec = ss
         tr.stats.sac.nzmsec = 0
-        stream.write(localdir + '/boxes/' + box + '/corrected/' + events[i] + '/' + sac_base, format='SAC')
+        stream.write(localdir + '/boxes/' + box + '/uncorrected/' + events[i] + '/' + sac_base, format='SAC')

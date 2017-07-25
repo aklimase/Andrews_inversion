@@ -22,10 +22,10 @@ location = '*'
 tsunit = 'VEL'
 channel = 'HH*'
 
-box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
-#box = 'Salton_Trough_SWS_ERR'
+box = 'Salton_Trough_SWS_ERR'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
@@ -52,7 +52,7 @@ for i in range(len(event_dirs)):
         network, stn, channel, space, yyyy, month, day, hh, mm, sssac =  base.split('_')
         ss = sssac.split('.')[0]
         cutfile = cut_dir + events[i] + '/' + network + '_' + stn + '_' + channel + '__' + yyyy + '_'  + month + '_' +  day + '_' +  hh + '_' + mm + '_' + ss + '.SAC'
-        print(files[j])
+        print 'cutting file: ' + files[j]
         #calling cut function
         #cuts 2 sec before s wave arrival and 120 seconds after
         cuttime = cut_swave(files[j], cutfile, 2, 120)

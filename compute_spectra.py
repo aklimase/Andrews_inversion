@@ -27,7 +27,11 @@ from spec_func import bin_spec
 #read in all instrument corrected data and compute spectra
 #boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/Riverside_FRD_RDM'
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
-boxpath = '/Users/escuser/project/boxes/Riverside_FRD_RDM'
+#boxpath = '/Users/escuser/project/boxes/Riverside_FRD_RDM'
+#boxpath = '/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR'
+boxpath = '/Users/escuser/project/boxes/Salton_Trough_SWS_ERR'
+
+
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 
 events = []
@@ -51,7 +55,7 @@ for i in range(len(events)):
     recordpaths_N = glob.glob(boxpath + '/corrected/Event_' + event +'/*_*_HHN*.SAC')#full path for only specified channel
     recordpaths_E = glob.glob(boxpath + '/corrected/Event_' + event + '/*_*_HHE*.SAC')#full path for only specified channel
 #    files = glob.glob(event_dirs[i] + '/*.SAC')
-    for j in range(len(recordpaths_N)):
+    for j in range(len(recordpaths_E)):
         #North component
         print 'binning and fft of event: '+ event
         base_N = path.basename(recordpaths_N[j])
@@ -81,23 +85,24 @@ for i in range(len(events)):
         spec_array_E = np.array(spec_amp)
         freq_array_E = np.array(freq)
         
-        ####here we bin into evenly spaced bins with frequency
-        #spectra is power spectra so add the two components
-        data_NE_2 = spec_array_E + spec_array_N
-        #now data is NE power spectra
-        #take the square root for normal velocity spectra
-        data_NE = np.sqrt(data_NE_2)
+        if(len(spec_array_E)==len(spec_array_N)):
+            ####here we bin into evenly spaced bins with frequency
+            #spectra is power spectra so add the two components
+            data_NE_2 = spec_array_E + spec_array_N
+            #now data is NE power spectra
+            #take the square root for normal velocity spectra
+            data_NE = np.sqrt(data_NE_2)
+            
+            bins, binned_data = bin_spec(data_NE, freq, num_bins = 50)
         
-        bins, binned_data = bin_spec(data_NE, freq, num_bins = 50)
-    
-        ##write to file
-        outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + event + '.out', 'w')
-        data = np.array([bins, binned_data])
-    
-        data = data.T
-        outfile.write('#bins \t \t vel_spec_NE_cm \n')
-        np.savetxt(outfile, data, fmt=['%E', '%E'], delimiter='\t')
-        outfile.close()
+            ##write to file
+            outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + event + '.out', 'w')
+            data = np.array([bins, binned_data])
+        
+            data = data.T
+            outfile.write('#bins \t \t vel_spec_NE_cm \n')
+            np.savetxt(outfile, data, fmt=['%E', '%E'], delimiter='\t')
+            outfile.close()
     
 
 

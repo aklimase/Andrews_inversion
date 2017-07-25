@@ -58,10 +58,10 @@ prefilt = (0.0,0.001,0.7*nyquistf,nyquistf)
 
 
 
-box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
-#box = 'Salton_Trough_SWS_ERR'
+box = 'Salton_Trough_SWS_ERR'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/cutdata_s/Event_*')
@@ -132,7 +132,7 @@ for i in range(len(events)):
 #read in cut data, rmean and rtrend, find .resp file, correct and add to icorr dir
 for i in range(len(eventpaths)):#in this case event paths are all sac files
     base = path.basename(eventpaths[i])
-    print(base)
+    print 'correcting file: ' + base
     folder = eventpaths[i].split('/')[-2]
     network = base.split('_')[0]
     station = base.split('_')[1]
@@ -142,14 +142,15 @@ for i in range(len(eventpaths)):#in this case event paths are all sac files
     #first rmean and rtrend
     stream = read(eventpaths[i])
     tr = stream[0]
-    tr.detrend(type = 'demean')#removes mean of data
-    tr.detrend(type = 'simple')#rtrend linear from first and last samples
-    #rewrite to a sac file
-    tr.write('temp.sac', format = 'sac')
-    sacfile = 'temp.sac'
-    icorr_sacfile = icorr_path + '/' + folder + '/'+ base
-    print(icorr_sacfile)
-    #uncorrected_sac_file,resp_file,corrected_sac_file,water_level_bds,resp_unit
-    wf.remove_response(sacfile,respfile,icorr_sacfile,prefilt,tsunit)#prefilt values for HH
+    #check and make sure that the trace isn't empty
+    if(tr.stats.npts > 0):
+        tr.detrend(type = 'demean')#removes mean of data
+        tr.detrend(type = 'simple')#rtrend linear from first and last samples
+        #rewrite to a sac file
+        tr.write('temp.sac', format = 'sac')
+        sacfile = 'temp.sac'
+        icorr_sacfile = icorr_path + '/' + folder + '/'+ base
+        #uncorrected_sac_file,resp_file,corrected_sac_file,water_level_bds,resp_unit
+        wf.remove_response(sacfile,respfile,icorr_sacfile,prefilt,tsunit)#prefilt values for HH
     
     

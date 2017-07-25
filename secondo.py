@@ -224,49 +224,49 @@ for i in range(J):#for each station
 
 
 ########################################################################
-constraint = 'FRD'
-
-constraint_file = boxpath + '/secondo/' + constraint + '.out'
-data = np.genfromtxt(constraint_file)
-con_spec = data.T[1] #second col
-
-for i in range(I):#for each event
-    #make each row into an array
-    #constrained with station so mult by station spec
-    amp = event[i,:]*con_spec
-    outfile = open(outfile_path + '/' + eventidlist[i] + '.out', 'w')
-    out = (np.array([freq_list, amp])).T
-    outfile.write('#freq_bins \t vel_spec_NE_cm \n')
-    np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
-    outfile.close()
-    
-    plt.figure(figsize = (14,8))
-    plt.loglog(freq_list, amp, color='cornflowerblue')
-    plt.title('event: ' + eventidlist[i])
-    plt.xlabel('frequency (Hz)')
-    plt.ylabel('velocity spectrum cm/s')
-    plt.grid()
-    plt.savefig(outfile_path + '/' + eventidlist[i] + '.png')
+#constraint = 'SWS'
+#
+#constraint_file = boxpath + '/secondo/' + constraint + '.out'
+#data = np.genfromtxt(constraint_file)
+#con_spec = data.T[1] #second col
+#
+#for i in range(I):#for each event
+#    #make each row into an array
+#    #constrained with station so mult by station spec
+#    amp = event[i,:]*con_spec
+#    outfile = open(outfile_path + '/' + eventidlist[i] + '.out', 'w')
+#    out = (np.array([freq_list, amp])).T
+#    outfile.write('#freq_bins \t vel_spec_NE_cm \n')
+#    np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
+#    outfile.close()
 #    
-for i in range(J):#for each station
-    #make each row into an array
-    amp = (station[i,:])/con_spec
-    print(amp)
-    outfile = open(outfile_path + '/' + stationlist[i] + '.out', 'w')
-    out = (np.array([freq_list, amp])).T
-    outfile.write('#freq_bins \t vel_spec_NE_cm \n')
-    np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
-    outfile.close()
-    
-    
-    plt.figure(figsize = (14,8))
-    plt.loglog(freq_list, amp, color='cornflowerblue')
-    plt.title('station: ' + stationlist[i])
-    plt.ylim(0.1, 10)
-    plt.xlabel('frequency (Hz)')
-    plt.ylabel('velocity spectrum cm/s')
-    plt.grid()
-    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
+##    plt.figure(figsize = (14,8))
+##    plt.loglog(freq_list, amp, color='cornflowerblue')
+##    plt.title('event: ' + eventidlist[i])
+##    plt.xlabel('frequency (Hz)')
+##    plt.ylabel('velocity spectrum cm/s')
+##    plt.grid()
+##    plt.savefig(outfile_path + '/' + eventidlist[i] + '.png')
+##    
+#for i in range(J):#for each station
+#    #make each row into an array
+#    amp = (station[i,:])/con_spec
+#    print(amp)
+#    outfile = open(outfile_path + '/' + stationlist[i] + '.out', 'w')
+#    out = (np.array([freq_list, amp])).T
+#    outfile.write('#freq_bins \t vel_spec_NE_cm \n')
+#    np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
+#    outfile.close()
+#    
+#    
+##    plt.figure(figsize = (14,8))
+##    plt.loglog(freq_list, amp, color='cornflowerblue')
+##    plt.title('station: ' + stationlist[i])
+##    plt.ylim(0.1, 10)
+##    plt.xlabel('frequency (Hz)')
+##    plt.ylabel('velocity spectrum cm/s')
+##    plt.grid()
+##    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
 
 
 

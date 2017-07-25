@@ -18,8 +18,10 @@ from obspy import read
 #from obspy import core.utcdatetime
 
 #box = 'Riverside_FRD_RDM'
-#box = 'Salton_Trough_SWS_ERR'
-box = 'Imperial_Valley_PFO_TPFO_PMD'
+box = 'Salton_Trough_SWS_ERR'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_SWS_ERR'
+
 
 boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/' + box
 event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
@@ -58,6 +60,7 @@ for i in range(len(events)):
         ind = time_cat.index(time)
     #go into each sac file in directory and write location to header
     files = glob.glob(event_dirs[i] + '/*.SAC')
+    print 'writing: ' + events[i]
     for j in range(len(files)):
         sac_base = path.basename(files[j])
         stream = read(files[j])

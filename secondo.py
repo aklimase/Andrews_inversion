@@ -30,19 +30,21 @@ import dread
 
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
-box = 'Riverside_FRD_RDM'
+#box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
 
-boxpath = '/Users/escuser/project/boxes/' + box
+#boxpath = '/Users/escuser/project/boxes/' + box
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #record_path = glob.glob(boxpath + '/record_spectra/*.AZ.*.out')
 #print 'Number of records: ', len(record_path)
 
-record_path = glob.glob(boxpath + '/record_spectra/Event_*/*.out')#full path for only specified channel
-#record_path.extend(glob.glob(boxpath + '/record_spectra/14598996.*.out'))#full path for only specified channel
-print 'Number of records: ', len(record_path)
+record_path = glob.glob('/Users/escuser/project/boxes/Imperial_Valley_PFO_TPFO_PMD/record_spectra/Event_*/*.out')#full path for only specified channel
+record_path.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
+record_path.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
+record_path.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
 
+print 'Number of records: ', len(record_path)
 #read in all files to find networks and stations
 stationlist = []
 stn_lat = []
@@ -59,6 +61,9 @@ record_spec = []
 
 for i in range(len(record_path)):
     record = (record_path[i].split('/')[-1])
+    ##############################################################################3
+    box =  (record_path[i].split('/')[5])
+#    print(box)
     base = path.basename(record)
     network, station, channel, loc = base.split('_')[0:4]
     yyyy, month, day, hh, mm, ss = base.split('_')[4:]
@@ -66,8 +71,8 @@ for i in range(len(record_path)):
     eventid = yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss
     #read in uncorrected data for header info
     #correct for distance
-    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
-    print(raw_file)
+#    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    raw_file = '/Users/escuser/project/boxes/' + box + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
     
@@ -94,13 +99,13 @@ for i in range(len(record_path)):
         stationlist.append(station)
         stn_lat.append(stlat)
         stn_lon.append(stlon)
-        print station, stlat, stlon
+#        print station, stlat, stlon
     if eventid not in eventidlist:
         eventidlist.append(eventid)
         event_lat.append(evlat)
         event_lon.append(evlon)
         event_depth.append(evdepth)
-        print eventid, evlat, evlon, evdepth
+#        print eventid, evlat, evlon, evdepth
         
 
         
@@ -183,7 +188,8 @@ print(event.shape, station.shape)
 #now event has the dim of events x frequency bins
 
 #write an output file for each event and station
-outfile_path = boxpath + '/secondo'
+#outfile_path = boxpath + '/secondo'
+outfile_path = '/Users/escuser/project/boxes/secondo_all'
 
 
 for i in range(I):#for each event
@@ -226,7 +232,7 @@ for i in range(J):#for each station
 ########################################################################
 #constraint = 'SWS'
 #
-#constraint_file = boxpath + '/secondo/' + constraint + '.out'
+#constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
 #data = np.genfromtxt(constraint_file)
 #con_spec = data.T[1] #second col
 #
@@ -267,9 +273,9 @@ for i in range(J):#for each station
 ##    plt.ylabel('velocity spectrum cm/s')
 ##    plt.grid()
 ##    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
-
-
-
+#
+#
+#
 
 
 

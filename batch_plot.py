@@ -13,36 +13,56 @@ outputs: generates plot to the screen, can change to save images as .png s
 """
 
 #plot raw data, cut data, and corrected data
+#import matplotlib
+#matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 import glob
+import os
 import os.path as path
 from obspy import read
 
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
-box = 'Riverside_FRD_RDM'
+#box = 'Riverside_FRD_RDM'
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_SWS_ERR'
+box = 'Salton_Trough_SWS_ERR'
+
 
 boxpath = '/Users/escuser/project/boxes/' + box
-event_dirs = glob.glob(boxpath + '/corrected/Event_*')
+#event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 
-uncorrpaths = glob.glob(boxpath + '/uncorrected/Event_*/AZ*.SAC')
-corrfilepaths = glob.glob(boxpath + '/corrected/Event_*/AZ*.SAC')
-cutfilepaths = glob.glob(boxpath + '/cutdata_s/Event_*/AZ*.SAC')
+#cutfilepaths = glob.glob(boxpath + '/cutdata_s/Event_*/*.SAC')
+
+uncorr = boxpath + '/uncorrected/'
+cut = boxpath + '/cutdata_s/'
+#corr = boxpath + '/corrected/'
 
 #cutfilepath = boxpath + '/cutdata_s'#full path for only specified channel
-#icorrfilepath = boxpath + '/icorrdata'#full path for only specified channel
+correctedfilepath = glob.glob(boxpath + '/corrected/Event_*/*.SAC')#full path for only specified channel
+
+event_dirs = glob.glob(boxpath + '/corrected/Event_*')
+events = []
+for i in range(len(event_dirs)):
+    events.append(path.basename(event_dirs[i]))
+#make event directories within corrected local data
+#make a directory for each event
+for i in range(len(events)):
+    if not path.exists(boxpath + '/plots/' + events[i]):
+        os.makedirs(boxpath + '/plots/' + events[i])
 
 
-for i in range(len(cutfilepaths)):#in this case event paths are all sac files
-    base = path.basename(uncorrpaths[i])
+
+for i in range(len(correctedfilepath)):#in this case event paths are all sac files
+    base = path.basename(correctedfilepath[i])
+    event = correctedfilepath[i].split('/')[-2]
     network = base.split('_')[0]
     station = base.split('_')[1]
     full_channel = base.split('_')[2]
-    
-    uncorrfile = uncorrpaths[i]
-    corrfile = corrfilepaths[i]
-    cutfile = cutfilepaths[i]
+        
+    uncorrfile = uncorr + event + '/' + base
+    corrfile = correctedfilepath[i]
+    cutfile = cut + event + '/' + base
     
     #read in traces
     stream = read(uncorrfile)
@@ -96,8 +116,8 @@ for i in range(len(cutfilepaths)):#in this case event paths are all sac files
 #    plt.xlim(0, len(data3))
 #    plt.xlabel('sample number', fontsize = 15)
     
-    print 'saving image: ' + boxpath + '/plots/' + base.split('.')[0] + '.png'
-    plt.savefig(boxpath + '/plots/' + base.split('.')[0] + '.png')
+    print 'saving image: ' + boxpath + '/plots/' + event + '/' + base.split('.')[0] + '.png'
+    plt.savefig(boxpath + '/plots/' + event + '/' + base.split('.')[0] + '.png')
     plt.close()
     
     

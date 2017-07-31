@@ -26,10 +26,10 @@ from obspy import read
 from spec_func import L1norm
 
 
-box = 'Imperial_Valley_PFO_TPFO_PMD'
+#box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
-#box = 'Salton_Trough_SWS_ERR'
+box = 'Salton_Trough_SWS_ERR'
 print box
 
 boxpath = '/Users/escuser/project/boxes/' + box
@@ -99,63 +99,63 @@ for i in range(len(record_paths)):  ##for every record
     station_spec = station_data[:,1]
     
     
-    #plot the station spectra
-#    fig = plt.figure(figsize = (12,25))
-#    fig.text(0.04, 0.5, 'Velocity amplitude (cm/s)', va='center', rotation='vertical', fontsize = 15)
-#    plt.subplot(411)
-#    plt.title('record ' + base, fontsize = 15)
-#    plt.grid()
-#    plt.loglog(f_bins, record_spec, color = 'b', label = 'record')
-#    plt.loglog(f_bins, station_spec*event_spec, color='black', label = 'event*site')
-#    plt.legend(loc=1, borderaxespad=0.)
-#    plt.subplot(412)
-#    plt.title('event ' +  eventid, fontsize = 15)
-#    plt.grid()
-#    plt.loglog(f_bins, event_spec, color = 'green')
-#    plt.subplot(413)
-#    plt.title('station ' + station, fontsize = 15)
-#    plt.grid()
-#    plt.loglog(f_bins, station_spec, color='r')
-#    plt.subplot(414)
-#    plt.title('Residuals', fontsize = 15)
+#    plot the station spectra
+    fig = plt.figure(figsize = (12,25))
+    fig.text(0.04, 0.5, 'Velocity amplitude (cm/s)', va='center', rotation='vertical', fontsize = 15)
+    plt.subplot(411)
+    plt.title('record ' + base, fontsize = 15)
+    plt.grid()
+    plt.loglog(f_bins, record_spec, color = 'b', label = 'record')
+    plt.loglog(f_bins, station_spec*event_spec, color='black', label = 'event*site')
+    plt.legend(loc=1, borderaxespad=0.)
+    plt.subplot(412)
+    plt.title('event ' +  eventid, fontsize = 15)
+    plt.grid()
+    plt.loglog(f_bins, event_spec, color = 'green')
+    plt.subplot(413)
+    plt.title('station ' + station, fontsize = 15)
+    plt.grid()
+    plt.loglog(f_bins, station_spec, color='r')
+    plt.subplot(414)
+    plt.title('Residuals', fontsize = 15)
 
 ###############################################################################
-    residual[i:,] = np.log(record_spec) - np.log(station_spec*event_spec)
+#    residual[i:,] = np.log(record_spec) - np.log(station_spec*event_spec)
     
-#    plt.grid()
-#    plt.plot(f_bins, station_spec*event_spec - record_spec, color='black', label = 'event*site')
-#    plt.xscale('log')
-##    plt.xlim(0.1, 50)
-#    plt.ylim(-500,500)
-##    plt.loglog(f_bins, station_spec*event_spec + L1_norm_std, color='black', ls = '--', label = '1 sigma L1')
-##    plt.loglog(f_bins, station_spec*event_spec - L1_norm_std, color='black', ls = '--')
-#    plt.legend(loc=1, borderaxespad=0.)
-#    plt.xlabel('Frequency (Hz)', fontsize = 15)
-#    plt.savefig(boxpath + '/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
-#    plt.close()
-##    plt.show()
+    plt.grid()
+    plt.plot(f_bins, np.log(record_spec) - np.log(station_spec*event_spec), color='black')
+    plt.xscale('log')
+#    plt.xlim(0.1, 50)
+    plt.ylim(-10,10)
+#    plt.loglog(f_bins, station_spec*event_spec + L1_norm_std, color='black', ls = '--', label = '1 sigma L1')
+#    plt.loglog(f_bins, station_spec*event_spec - L1_norm_std, color='black', ls = '--')
+    plt.xlabel('Frequency (Hz)', fontsize = 15)
+    plt.savefig(boxpath + '/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
+    plt.close()
+#    plt.show()
 
-print(len(residual[0]))
-#print(residual[0:,])#first row?
-print(len(residual[:,0]))
-mean = np.mean(residual, axis = 0)
-std = np.std(residual, axis = 0)
-
-fig = plt.figure(figsize = (20,15))
-title = 'Event*site - Record spectra ' + box
-plt.title(title, fontsize = 20)
-plt.xscale('log')
-plt.ylabel('residual', fontsize = 15)
-plt.xlabel('frequency (Hz)', fontsize = 15)
-
-for i in range(len(residual[:,0])):
-    plt.plot(f_bins, residual[i])
-    plt.ylim(-50,50)
-    plt.hold(True)
-    
-plt.plot(f_bins, mean, color = 'black')
-plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black')
-#plt.plot(f_bins, mean-std, color = 'black')
-plt.savefig(boxpath + '/residuals.png')
-plt.show()
-    
+#print(len(residual[0]))
+##print(residual[0:,])#first row?
+#print(len(residual[:,0]))
+#mean = np.mean(residual, axis = 0)
+#std = np.std(residual, axis = 0)
+#
+#fig = plt.figure(figsize = (20,15))
+#title = 'Event*site - Record spectra ' + box
+#plt.title(title, fontsize = 20)
+#plt.xscale('log')
+#plt.xlim(0.1, 50)
+##plt.ylim(-5,5)
+#plt.ylabel('residual', fontsize = 15)
+#plt.xlabel('frequency (Hz)', fontsize = 15)
+#
+#for i in range(len(residual[:,0])):
+#    plt.plot(f_bins, residual[i])
+#    plt.hold(True)
+#    
+#plt.plot(f_bins, mean, color = 'black')
+#plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black')
+##plt.plot(f_bins, mean-std, color = 'black')
+#plt.savefig(boxpath + '/residuals.png')
+#plt.show()
+#    

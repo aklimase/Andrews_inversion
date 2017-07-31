@@ -29,7 +29,7 @@ event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
 localdir = '/Users/escuser/project'
 
 #read in catalog file
-catalog = localdir + '/Imperial_Valley_M2.5_USGS_Catalog.txt'
+catalog = localdir + '/Salton_Trough_M2.5_USGS_Catalog.txt'
 
 time_cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1])
 #need to truncate milliseconds

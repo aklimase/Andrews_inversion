@@ -23,7 +23,7 @@ import os.path as path
 import glob
 import dread
 from obspy import read  
-from spec_func import L1norm
+#from spec_func import L1norm
 
 
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
@@ -100,7 +100,7 @@ for i in range(len(record_paths)):  ##for every record
     
     
 #    plot the station spectra
-    fig = plt.figure(figsize = (12,25))
+    fig = plt.figure(figsize = (15,25))
     fig.text(0.04, 0.5, 'Velocity amplitude (cm/s)', va='center', rotation='vertical', fontsize = 15)
     plt.subplot(411)
     plt.title('record ' + base, fontsize = 15)

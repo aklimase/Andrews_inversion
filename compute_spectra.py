@@ -29,7 +29,10 @@ from spec_func import bin_spec
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #boxpath = '/Users/escuser/project/boxes/Riverside_FRD_RDM'
 #boxpath = '/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR'
-boxpath = '/Users/escuser/project/boxes/Salton_Trough_SWS_ERR'
+
+#boxpath = '/Users/escuser/project/boxes/Salton_Trough_SWS_ERR'
+
+boxpath = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM'
 
 
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')

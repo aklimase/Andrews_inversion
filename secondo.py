@@ -39,10 +39,13 @@ import dread
 #record_path = glob.glob(boxpath + '/record_spectra/*.AZ.*.out')
 #print 'Number of records: ', len(record_path)
 
-record_path = glob.glob('/Users/escuser/project/boxes/Imperial_Valley_PFO_TPFO_PMD/record_spectra/Event_*/*.out')#full path for only specified channel
-record_path.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
-record_path.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
-record_path.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
+#record_path = glob.glob('/Users/escuser/project/boxes/Imperial_Valley_PFO_TPFO_PMD/record_spectra/Event_*/*.out')#full path for only specified channel
+#record_path.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
+#record_path.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
+#record_path.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
+
+record_path = glob.glob('/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM/record_spectra/Event_*/*.out')
+print(record_path)
 
 print 'Number of records: ', len(record_path)
 #read in all files to find networks and stations
@@ -72,7 +75,9 @@ for i in range(len(record_path)):
     #read in uncorrected data for header info
     #correct for distance
 #    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
-    raw_file = '/Users/escuser/project/boxes/' + box + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    ################################
+#    raw_file = '/Users/escuser/project/boxes/' + box + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    raw_file = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
     
@@ -230,11 +235,23 @@ for i in range(J):#for each station
 
 
 ########################################################################
-#constraint = 'SWS'
-#
-#constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
-#data = np.genfromtxt(constraint_file)
-#con_spec = data.T[1] #second col
+constraint = 'Event_'
+
+#long period spectral level
+u0 = 1 #displacement, units of cm
+ml = 2.5 #moment magnitude
+M0 = 10**(1.5*(0.754*ml + 11.584))# Moment, dyne cm, calculated from Ross 2016
+sig = 5 #stress drop mega pascals, 1 Pa = 1 dyne/cm2
+B = 3500 #cm/s
+fc = B*((sig)/(8.47*M0))**3
+Brune = (2.*np.pi*freq_list*u0)/(1+(freq_list/fc)**2)
+
+print(Brune)
+
+
+constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
+data = np.genfromtxt(constraint_file)
+con_spec = data.T[1] #second col
 #
 #for i in range(I):#for each event
 #    #make each row into an array

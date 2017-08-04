@@ -20,13 +20,15 @@ import glob
 import os
 import os.path as path
 from obspy import read
-
+from matplotlib.dates import date2num
+import numpy as np
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #box = 'Riverside_FRD_RDM'
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
-box = 'Salton_Trough_SWS_ERR'
+#box = 'Salton_Trough_SWS_ERR'
+box = 'all_paths_subset'
 
 
 boxpath = '/Users/escuser/project/boxes/' + box
@@ -68,12 +70,14 @@ for i in range(len(correctedfilepath)):#in this case event paths are all sac fil
     stream = read(uncorrfile)
     tr = stream[0]
     data1 = tr.data
+#    start = date2num(tr.stats.starttime.datetime)
+#    end = date2num(tr.stats.endtime.datetime)
+#    times = np.linspace(start, end, tr.stats.npts)
     
     stream = read(corrfile)
     tr = stream[0]
     data2 = tr.data
-    mag = str(tr.stats.sac.mag)
-    
+    mag = str(tr.stats.sac.mag)    
 
     fig = plt.figure(figsize = (25,20))
     fig.text(0.04, 0.5, 'Velocity amplitude', va='center', rotation='vertical', fontsize = 15)
@@ -82,9 +86,9 @@ for i in range(len(correctedfilepath)):#in this case event paths are all sac fil
 
     plt.subplot(3,1,1)
     plt.plot(data1, color='black')
-    plt.title('uncorrected')
-    plt.ylabel('counts')
-    plt.xlim(0, len(data1))
+    plt.title('uncorrected', fontsize = 16)
+    plt.ylabel('counts', fontsize = 16)
+#    plt.xlim(times[0], times[-1])
     
 #    stream = read(corrfile)
 #    tr = stream[0]
@@ -94,9 +98,10 @@ for i in range(len(correctedfilepath)):#in this case event paths are all sac fil
     
     plt.subplot(3,1,3)
     plt.plot(data2, color='black')
-    plt.title('corrected')
-    plt.ylabel('m/s')
+    plt.title('corrected', fontsize = 16)
+    plt.ylabel('m/s', fontsize = 16)
     plt.xlim(0, len(data2))
+    plt.xlabel('samples', fontsize = 16)
     
     stream = read(cutfile)
     tr = stream[0]
@@ -104,9 +109,10 @@ for i in range(len(correctedfilepath)):#in this case event paths are all sac fil
     
     plt.subplot(3,1,2)
     plt.plot(data3, color='black')
-    plt.title('cut')
-    plt.ylabel('counts')
+    plt.title('cut', fontsize = 16)
+    plt.ylabel('counts', fontsize = 16)
     plt.xlim(0, len(data3))
+
     
 #    resp = data3/data2
 #    print(min(resp), max(resp))

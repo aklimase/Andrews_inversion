@@ -13,10 +13,12 @@ import os.path as path
 from obspy import read
 
 
-box = 'Riverside_FRD_RDM'
+#box = 'Riverside_FRD_RDM'
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Salton_Trough_SWS_ERR'
+
+box = 'all_paths_subset'
 
 
 boxpath = '/Users/escuser/project/boxes/' + box

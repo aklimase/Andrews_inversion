@@ -61,7 +61,8 @@ prefilt = (0.0,0.001,0.7*nyquistf,nyquistf)
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
-box = 'Salton_Trough_SWS_ERR'
+#box = 'Salton_Trough_SWS_ERR'
+box = 'all_paths_subset'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/cutdata_s/Event_*')
@@ -79,23 +80,7 @@ for i in range(len(events)):
         os.makedirs(cut_dir + '/' + events[i])
 
 
-
-
-
-#
-#events = []
-#for i in range(len(eventpaths)):
-#    #events.append(eventpaths[i].split('/')[9])#take last part of path aka each folder name
-#    eventid = (eventpaths[i].split('/')[7]).split('.')[0]
-#    if eventid not in events:
-#        events.append(eventid)
-#print(len(events))
-
-##read in all files to find networks and stations
-#networklist = []
-l = []
-
-     
+l = []   
 for i in range(len(eventpaths)):
     #get the path of every file in the event directory and split into network.station, and channel
     base = path.basename(eventpaths[i])
@@ -114,8 +99,10 @@ print(l)
 #response_path = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/response_files'
 response_path = boxpath + '/respfiles'
 
-#makes a response file for each station and channel
-#for network in networklist:
+####################################################
+#comment out if already have resp files
+##makes a response file for each station and channel
+##for network in networklist:
 for i in range(len(l)):
     respfile = response_path + '/' + l[i] + '.' + channel + '.resp'
     network, station = l[i].split('.')

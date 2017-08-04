@@ -29,10 +29,10 @@ from spec_func import bin_spec
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #boxpath = '/Users/escuser/project/boxes/Riverside_FRD_RDM'
 #boxpath = '/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR'
-
 #boxpath = '/Users/escuser/project/boxes/Salton_Trough_SWS_ERR'
 
-boxpath = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM'
+#boxpath = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM'
+boxpath = '/Users/escuser/project/boxes/all_paths_subset'
 
 
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')
@@ -55,58 +55,65 @@ for i in range(len(events)):
 for i in range(len(events)):
 #    event = recordpaths_N.split('/')[-2]#event dir second to last item in path
     event = events[i][6:]
-    recordpaths_N = glob.glob(boxpath + '/corrected/Event_' + event +'/*_*_HHN*.SAC')#full path for only specified channel
-    recordpaths_E = glob.glob(boxpath + '/corrected/Event_' + event + '/*_*_HHE*.SAC')#full path for only specified channel
+    print 'binning and fft of event: '+ event
+    recordpaths = glob.glob(boxpath + '/corrected/Event_' + event +'/*_*_HHN*.SAC')#full path for only specified channel
+#    recordpaths_E = glob.glob(boxpath + '/corrected/Event_' + event + '/*_*_HHE*.SAC')#full path for only specified channel
+    stns = [(x.split('/')[-1]).split('_')[1] for x in recordpaths]
+#    network = [(x.split('/')[-1]).split('_')[0] for x in recordpaths]
 #    files = glob.glob(event_dirs[i] + '/*.SAC')
-    for j in range(len(recordpaths_E)):
-        #North component
-        print 'binning and fft of event: '+ event
-        base_N = path.basename(recordpaths_N[j])
-        base_E = path.basename(recordpaths_E[j])
-    #    eventid = base_N.split('.')[0]
-        network = base_N.split('_')[0]
-        station = base_N.split('_')[1]
-        full_channel_N = base_N.split('_')[2]
-        full_channel_E = base_E.split('_')[2]
-                
-        #mtspec returns power spectra (square of spectra)
-        stream = read(recordpaths_N[j])
-        tr = stream[0]
-        data = tr.data
-        ##########################################################################
-        ## convert to cm/s from m/s before mtspec
-        data = data*100
-        
-        spec_amp, freq = mtspec(data, delta = 0.01, time_bandwidth = 4, number_of_tapers=7, quadratic = True)
-        spec_array_N = np.array(spec_amp)
-        freq_array_N = np.array(freq)
+    for j in range(len(stns)):
+        recordpath_E = glob.glob(boxpath + '/corrected/Event_' + event +'/*_' + stns[j] + '_HHE*.SAC')
+        recordpath_N = glob.glob(boxpath + '/corrected/Event_' + event +'/*_' + stns[j] + '_HHN*.SAC')
+        if(len(recordpath_E) == 1 and len(recordpath_N) == 1):
+            #North component
+            base_N = path.basename(recordpath_E[0])
+            base_E = path.basename(recordpath_N[0])
     
-        stream = read(recordpaths_E[j])
-        tr = stream[0]
-        data = tr.data
-        spec_amp, freq = mtspec(data, delta = 0.01, time_bandwidth = 4, number_of_tapers=7, quadratic = True)
-        spec_array_E = np.array(spec_amp)
-        freq_array_E = np.array(freq)
-        
-        if(len(spec_array_E)==len(spec_array_N)):
-            ####here we bin into evenly spaced bins with frequency
-            #spectra is power spectra so add the two components
-            data_NE_2 = spec_array_E + spec_array_N
-            #now data is NE power spectra
-            #take the square root for normal velocity spectra
-            data_NE = np.sqrt(data_NE_2)
+        #    eventid = base_N.split('.')[0]
+            network = base_N.split('_')[0]
+            station = base_N.split('_')[1]
+            full_channel_N = base_N.split('_')[2]
+            full_channel_E = base_E.split('_')[2]
+            #mtspec returns power spectra (square of spectra)
+            stream = read(recordpath_N[0])
+            tr = stream[0]
+            data = tr.data
+            ##########################################################################
+            ## convert to cm/s from m/s before mtspec
+            data = data*100
             
-            bins, binned_data = bin_spec(data_NE, freq, num_bins = 50)
+            spec_amp, freq = mtspec(data, delta = 0.01, time_bandwidth = 4, number_of_tapers=7, quadratic = True)
+            spec_array_N = np.array(spec_amp)
+            freq_array_N = np.array(freq)
         
-            ##write to file
-            outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + event + '.out', 'w')
-            data = np.array([bins, binned_data])
+            stream = read(recordpath_E[0])
+            tr = stream[0]
+            data = tr.data
+            spec_amp, freq = mtspec(data, delta = 0.01, time_bandwidth = 4, number_of_tapers=7, quadratic = True)
+            spec_array_E = np.array(spec_amp)
+            freq_array_E = np.array(freq)
+            
+            if(len(spec_array_E)==len(spec_array_N)):
+                ####here we bin into evenly spaced bins with frequency
+                #spectra is power spectra so add the two components
+                data_NE_2 = spec_array_E + spec_array_N
+                #now data is NE power spectra
+                #take the square root for normal velocity spectra
+                data_NE = np.sqrt(data_NE_2)
+                
+                bins, binned_data = bin_spec(data_NE, freq, num_bins = 50)
+                
+                #make sure that all spec is a number
+                if (np.isnan(binned_data).any() == False):
+                ##write to file
+                    outfile = open(boxpath + '/record_spectra/'+ events[i] + '/'+ network + '_' + station + '_' + 'HHNE' + '__' + event + '.out', 'w')
+                    data = np.array([bins, binned_data])
+                
+                    data = data.T
+                    outfile.write('#bins \t \t vel_spec_NE_cm \n')
+                    np.savetxt(outfile, data, fmt=['%E', '%E'], delimiter='\t')
+                    outfile.close()
         
-            data = data.T
-            outfile.write('#bins \t \t vel_spec_NE_cm \n')
-            np.savetxt(outfile, data, fmt=['%E', '%E'], delimiter='\t')
-            outfile.close()
-    
 
 
 

@@ -18,9 +18,10 @@ outputs: writes spectra text files for each event and station in event_site_spec
 import glob
 import os.path as path
 import numpy as np
-import matplotlib.pyplot as plt
 from obspy import read    
 import dread
+import random
+import scipy
 
 
 #read in the cut and corrected spectra = records
@@ -33,7 +34,8 @@ import dread
 #box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
 
-#boxpath = '/Users/escuser/project/boxes/' + box
+box = 'all_paths_subset'
+boxpath = '/Users/escuser/project/boxes/' + box
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
 #record_path = glob.glob(boxpath + '/record_spectra/*.AZ.*.out')
@@ -44,8 +46,20 @@ import dread
 #record_path.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
 #record_path.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
 
-record_path = glob.glob('/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM/record_spectra/Event_*/*.out')
-print(record_path)
+record_path = glob.glob(boxpath + '/record_spectra/Event_*/*.out')
+
+#n= len(record_path)
+#n_sample = int(np.round(0.5*n))
+#sample = random.sample(xrange(0, n-1), n_sample)
+#
+##get event info from those lines
+#
+#sub_catalog = [record_path[i] for i in sample]
+#record_path = sub_catalog
+
+
+
+#print(record_path)
 
 print 'Number of records: ', len(record_path)
 #read in all files to find networks and stations
@@ -77,7 +91,7 @@ for i in range(len(record_path)):
 #    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     ################################
 #    raw_file = '/Users/escuser/project/boxes/' + box + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
-    raw_file = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
     
@@ -174,14 +188,15 @@ m1 = np.zeros((I+J, F_bins))
 for f in range(F_bins):
     d = R[:,f]#record for given frequency col
     dT = d.T
-    G_inv = np.linalg.pinv(G)
+    G_inv = np.linalg.pinv(G, rcond=1e-13)
+#    G_inv = scipy.linalg.pinv(G)
     m1[:,f] = np.dot(G_inv,dT)
 
 #now we need to turn log power spectra into just the velocity spectra
 #should still be cm/s
 #####################################################################
-m1 = 10**(m1)
-m1 = np.sqrt(m1)
+#m1_10 = np.power(10.0, m1)
+#m1 = np.sqrt(m1_10)
 
 print(m1.shape)
 
@@ -194,12 +209,14 @@ print(event.shape, station.shape)
 
 #write an output file for each event and station
 #outfile_path = boxpath + '/secondo'
-outfile_path = '/Users/escuser/project/boxes/secondo_all'
+outfile_path = boxpath + '/secondo'
 
 
 for i in range(I):#for each event
     #make each row into an array
-    amp = event[i,:]
+#    amp = event[i,:]
+    print(eventidlist[i], event[i,:])
+    amp = np.sqrt(np.power(10.0, event[i,:]))
     outfile = open(outfile_path + '/' + eventidlist[i] + '.out', 'w')
     out = (np.array([freq_list, amp])).T
     outfile.write('#freq_bins \t vel_spec_NE_cm \n')
@@ -218,6 +235,8 @@ for i in range(I):#for each event
 for i in range(J):#for each station
     #make each row into an array
     amp = station[i,:]
+    print(stationlist[i], amp)
+    amp = np.sqrt(np.power(10.0, station[i,:]))
     outfile = open(outfile_path + '/' + stationlist[i] + '.out', 'w')
     out = (np.array([freq_list, amp])).T
     outfile.write('#freq_bins \t vel_spec_NE_cm \n')
@@ -235,23 +254,23 @@ for i in range(J):#for each station
 
 
 ########################################################################
-constraint = 'Event_'
-
-#long period spectral level
-u0 = 1 #displacement, units of cm
-ml = 2.5 #moment magnitude
-M0 = 10**(1.5*(0.754*ml + 11.584))# Moment, dyne cm, calculated from Ross 2016
-sig = 5 #stress drop mega pascals, 1 Pa = 1 dyne/cm2
-B = 3500 #cm/s
-fc = B*((sig)/(8.47*M0))**3
-Brune = (2.*np.pi*freq_list*u0)/(1+(freq_list/fc)**2)
-
-print(Brune)
-
-
-constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
-data = np.genfromtxt(constraint_file)
-con_spec = data.T[1] #second col
+#constraint = 'Event_'
+#
+##long period spectral level
+#u0 = 1 #displacement, units of cm
+#ml = 2.5 #moment magnitude
+#M0 = 10**(1.5*(0.754*ml + 11.584))# Moment, dyne cm, calculated from Ross 2016
+#sig = 5 #stress drop mega pascals, 1 Pa = 1 dyne/cm2
+#B = 3500 #cm/s
+#fc = B*((sig)/(8.47*M0))**3
+#Brune = (2.*np.pi*freq_list*u0)/(1+(freq_list/fc)**2)
+#
+#print(Brune)
+#
+#
+#constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
+#data = np.genfromtxt(constraint_file)
+#con_spec = data.T[1] #second col
 #
 #for i in range(I):#for each event
 #    #make each row into an array

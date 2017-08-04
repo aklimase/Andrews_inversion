@@ -14,17 +14,56 @@ import os.path as path
 import glob
 import dread
 from obspy import read
+import obspy
 
 boxpath = '/Users/escuser/project/boxes/'
-box_list = ['Imperial_Valley_PFO_TPFO_PMD', 'Imperial_Valley_SWS_ERR', 'Riverside_FRD_RDM', 'Salton_Trough_SWS_ERR']
-#box_list = ['Imperial_Valley_SWS_ERR', 'Imperial_Valley_PFO_TPFO_PMD']
+box_list = [('Imperial_Valley', 'PFO_TPFO_PMD'), ('Imperial_Valley', 'SWS_ERR'), ('Riverside', 'FRD_RDM'), ('Salton_Trough', 'SWS_ERR')]
 residual_list = []
+
+
+evpaths = glob.glob(boxpath + 'all_paths_subset/record_spectra/Event_*')
+ev = [x.split('/')[-1] for x in evpaths]
+
 
 #read in corrected event directories to find event matches
 for i in range(len(box_list)):
-    record_paths = glob.glob(boxpath + box_list[i] + '/record_spectra/Event_*/*.out')#full path for only specified channel
-    print(box_list[i], len(record_paths))
-    out_dir = boxpath + 'secondo_all/'
+    box = box_list[i][0]
+    stations = box_list[i][1]
+    st_list = stations.split('_')
+    localdir = '/Users/escuser/project'
+    #read in catalog file
+    catalog = localdir + '/' + box + '_M2.5_USGS_Catalog.txt'
+
+    time_cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1])
+    #need to truncate milliseconds
+    f = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [2,3,4,10])
+#    lat, lon, depth, mag = f.T
+    #times of all events in the box catalog
+    time_cat = [obspy.core.utcdatetime.UTCDateTime(x.split('.')[0]) for x in time_cat]
+    
+    #check all events in record_spectra to see if time_cat event is there
+    #if yes add to record_paths
+    box_events = []
+    #make a record path list from box events in time_cat
+    for k in range(len(time_cat)):
+        yyyy = str(time_cat[k].year).zfill(4)
+        month = str(time_cat[k].month).zfill(2)
+        day = str(time_cat[k].day).zfill(2)
+        hh = str(time_cat[k].hour).zfill(2)
+        mm = str(time_cat[k].minute).zfill(2)
+        ss = str(time_cat[k].second).zfill(2)
+        box_events.append('Event_' + yyyy + '_' + month + '_' + day + '_' + hh + '_' + mm + '_' + ss)
+    
+    print(len(box_events))
+    record_paths = []
+    for p in range(len(box_events)):
+        if box_events[p] in ev:
+            for st in st_list:
+                f = '*' + st + '*.out'
+#                print glob.glob((boxpath + 'all_paths_subset/record_spectra/' + box_events[p] + '/' + f))
+                record_paths.extend(glob.glob(boxpath + 'all_paths_subset/record_spectra/' + box_events[p] + '/' + f))
+    print(box, len(record_paths))
+    out_dir = boxpath + 'all_paths_subset/secondo/'
     
     residual = np.zeros((len(record_paths), 50))
 ##################################
@@ -42,7 +81,7 @@ for i in range(len(box_list)):
         
         #read in raw data for record info
         #correct for distance
-        raw_file = boxpath + box_list[i] +  '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+        raw_file = boxpath + 'all_paths_subset/uncorrected/Event_' + eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
         stream = read(raw_file)
         tr = stream[0]
         
@@ -77,13 +116,13 @@ for i in range(len(box_list)):
         residual_list.append(np.log(record_spec) - np.log(station_spec*event_spec))
     
     mean = np.mean(residual, axis = 0)
-    print('residual: ', len(residual))
+    print('len residual: ', len(residual))
     std = np.std(residual, axis = 0)
     
 #    residual_list.append(residual)
     
     fig = plt.figure(figsize = (20,15))
-    title = 'log(Record spectra) - log(event*site) ' + box_list[i]
+    title = 'log(Record spectra) - log(event*site) ' + box + '_' + stations
     plt.title(title, fontsize = 20)
     plt.xscale('log')
     plt.xlim(0.1, 50)
@@ -97,8 +136,13 @@ for i in range(len(box_list)):
 
     plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
     plt.axhline(y=0.0, color='black', linestyle='-')
-#    plt.savefig(boxpath + 'secondo_all/IV_only_residuals_' + box_list[i] + '.png')
+    plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 5, width = 1)
+    plt.ylim(-2,2)
+    plt.savefig(boxpath + 'all_paths_subset/residuals_' + box + '_' + stations + '.png')
     plt.show()
+
+
 
 fig = plt.figure(figsize = (20,15))
 title = 'log(Record spectra) - log(event*site) entire inversion'
@@ -117,5 +161,8 @@ mean = np.mean(residual_list, axis = 0)
 std = np.std(residual_list, axis = 0)    
 plt.errorbar(f_bins, mean, yerr = std, zorder = 4000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
 plt.axhline(y=0.0, color='black', linestyle='-')
-#plt.savefig(boxpath + 'secondo_all/IV_only_entire_inversion.png')
+plt.tick_params(axis='both', which='major', labelsize=15)
+plt.tick_params(axis='both', which='both', length = 5, width = 1)
+plt.ylim(-2,2)
+#plt.savefig(boxpath + 'all_paths_subset/all_boxes.png')
 plt.show()

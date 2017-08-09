@@ -22,11 +22,13 @@ from obspy import read
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
 
-box = 'all_paths_subset'
+box = 'all_paths'
 
 
-boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/' + box
-event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
+#boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/' + box
+boxpath = '/Users/escuser/project/boxes/' + box
+
+event_dirs = glob.glob(boxpath + '/uncorrected_local/Event_*')
 
 localdir = '/Users/escuser/project'
 

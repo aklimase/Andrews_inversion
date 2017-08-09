@@ -62,7 +62,7 @@ prefilt = (0.0,0.001,0.7*nyquistf,nyquistf)
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
-box = 'all_paths_subset'
+box = 'all_paths'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/cutdata_s/Event_*')
@@ -103,10 +103,10 @@ response_path = boxpath + '/respfiles'
 #comment out if already have resp files
 ##makes a response file for each station and channel
 ##for network in networklist:
-for i in range(len(l)):
-    respfile = response_path + '/' + l[i] + '.' + channel + '.resp'
-    network, station = l[i].split('.')
-    wf.download_response(network,station,location,channel,starttime,endtime,respfile)
+#for i in range(len(l)):
+#    respfile = response_path + '/' + l[i] + '.' + channel + '.resp'
+#    network, station = l[i].split('.')
+#    wf.download_response(network,station,location,channel,starttime,endtime,respfile)
 
         
 #read in all uncorrected sac files and loop through and for each look in response directory, then remove response and save to directory of corrected files
@@ -116,8 +116,14 @@ for i in range(len(events)):
     if not path.exists(icorr_path + '/' + events[i]):
         os.makedirs(icorr_path + '/' + events[i])
         
+        
+#hard_start = 0
+hard_start = eventpaths.index(boxpath + '/cutdata_s/Event_2010_06_13_03_08_57/AZ_PFO_HHE__2010_06_13_03_08_57.SAC')
+print(hard_start)
+        
+        
 #read in cut data, rmean and rtrend, find .resp file, correct and add to icorr dir
-for i in range(len(eventpaths)):#in this case event paths are all sac files
+for i in range(hard_start,len(eventpaths)):#in this case event paths are all sac files
     base = path.basename(eventpaths[i])
     print 'correcting file: ' + base
     folder = eventpaths[i].split('/')[-2]

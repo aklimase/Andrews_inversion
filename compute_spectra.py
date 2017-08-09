@@ -32,7 +32,7 @@ from spec_func import bin_spec
 #boxpath = '/Users/escuser/project/boxes/Salton_Trough_SWS_ERR'
 
 #boxpath = '/Users/alexisklimasewski/Documents/USGS/Riverside_FRD_RDM'
-boxpath = '/Users/escuser/project/boxes/all_paths_subset'
+boxpath = '/Users/escuser/project/boxes/all_paths'
 
 
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')
@@ -50,9 +50,11 @@ for i in range(len(events)):
 #read in only N, E, and return geometrical average
 #loop for every event and station
 
-#for i in range(len(recordpaths_N)):  ##for every record
-#for i in range(53,55):
-for i in range(len(events)):
+#hard_start = 0
+hard_start = events.index('Event_2010_05_31_05_19_24')
+print(hard_start)
+
+for i in range(hard_start, len(events)):
 #    event = recordpaths_N.split('/')[-2]#event dir second to last item in path
     event = events[i][6:]
     print 'binning and fft of event: '+ event

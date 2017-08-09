@@ -26,7 +26,7 @@ channel = 'HH*'
 #box = 'Imperial_Valley_SWS_ERR'
 #box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
-box = 'all_paths_subset'
+box = 'all_paths'
 
 boxpath = '/Users/escuser/project/boxes/' + box
 event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
@@ -43,9 +43,12 @@ for i in range(len(events)):
     if not path.exists(cut_dir + '/' + events[i]):
         os.makedirs(cut_dir + '/' + events[i])
 
+#hard_start = 0
+hard_start = event_dirs.index(boxpath + '/uncorrected/Event_2010_01_23_13_17_17')
+print(hard_start)
 
 #loop through event directories
-for i in range(len(event_dirs)):
+for i in range(hard_start, len(event_dirs)):
     #loop through all sac files in directory
     files = glob.glob(event_dirs[i] + '/*.SAC')
     print 'cutting files in event: ' + event_dirs[i]

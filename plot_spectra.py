@@ -33,22 +33,22 @@ from obspy import read
 #box = 'all_paths_subset'
 #print box
 
-boxpath = '/Users/escuser/project/boxes/'
+boxpath = '/Users/escuser/project/boxes/all_paths'
 
-record_paths = glob.glob('/Users/escuser/project/boxes/Imperial_Valley_PFO_TPFO_PMD/record_spectra/Event_*/*.out')#full path for only specified channel
-record_paths.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
-record_paths.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
-record_paths.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
+record_paths = glob.glob('/Users/escuser/project/boxes/all_paths/record_spectra/Event_*/*.out')#full path for only specified channel
+#record_paths.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
+#record_paths.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
+#record_paths.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
 
 
 
 
 #record_paths = glob.glob(boxpath + '/record_spectra/Event_*/*.out')#full path for only specified channel
 
-event_dir = boxpath + '/secondo_all/'
+event_dir = boxpath + '/secondo/'
 event_files = glob.glob(event_dir + '*.out')
 
-station_dir = boxpath + '/secondo_all/'
+station_dir = boxpath + '/secondo/'
 station_files = glob.glob(station_dir + '*.out')
 
 #print record_paths
@@ -60,10 +60,11 @@ station_files = glob.glob(station_dir + '*.out')
 ##make a 2d array with each row a record and each col a freq
 #residual = np.zeros((len(record_paths), 50))
 
-for i in range(len(record_paths)):  ##for every record
-#for i in range(5):  ##for every record
+#for i in range(len(record_paths)):  ##for every record
+for i in range(32000,32020):  ##for every record
     #North component
     base = path.basename(record_paths[i])
+    print(base)
 #    eventid = base.split('.')[0]
 #    network = base.split('.')[1]
 #    station = base.split('.')[2]
@@ -79,9 +80,10 @@ for i in range(len(record_paths)):  ##for every record
     
     #read in raw data for record info
     #correct for distance
-    raw_file = boxpath + box + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+    raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
+    print(raw_file)
     
     evlon =  tr.stats.sac.evlo #deg
     evlat =  tr.stats.sac.evla #deg
@@ -110,7 +112,7 @@ for i in range(len(record_paths)):  ##for every record
     
     
 #    plot the station spectra
-    fig = plt.figure(figsize = (18,20))
+    fig = plt.figure(figsize = (18,18))
     fig.text(0.04, 0.5, 'Velocity amplitude (cm/s)', va='center', rotation='vertical', fontsize = 20)
     plt.subplot(411)
     plt.title('record ' + base, fontsize = 15)
@@ -128,6 +130,7 @@ for i in range(len(record_paths)):  ##for every record
     plt.loglog(f_bins, event_spec, color = 'green')
 #    plt.xlim(0.1, 50)
     plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 5, width = 1)
 
     
     plt.subplot(413)
@@ -136,6 +139,7 @@ for i in range(len(record_paths)):  ##for every record
     plt.loglog(f_bins, station_spec, color='r')
 #    plt.xlim(0.1, 50)
     plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 5, width = 1)
 
     
     plt.subplot(414)
@@ -150,12 +154,14 @@ for i in range(len(record_paths)):  ##for every record
 #    plt.xlim(0.1, 50)
     plt.ylim(-10,10)
     plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 5, width = 1)
+
 
 #    plt.xlim(0.1, 50)
 #    plt.loglog(f_bins, station_spec*event_spec + L1_norm_std, color='black', ls = '--', label = '1 sigma L1')
 #    plt.loglog(f_bins, station_spec*event_spec - L1_norm_std, color='black', ls = '--')
     plt.xlabel('Frequency (Hz)', fontsize = 15)
-    plt.savefig(boxpath + '/secondo_all/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
-    plt.close()
-#    plt.show()
+    plt.savefig(boxpath + '/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
+#    plt.close()
+    plt.show()
 

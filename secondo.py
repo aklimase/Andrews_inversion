@@ -34,7 +34,7 @@ import scipy
 #box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
 
-box = 'all_paths_subset'
+box = 'all_paths'
 boxpath = '/Users/escuser/project/boxes/' + box
 
 #boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
@@ -46,7 +46,7 @@ boxpath = '/Users/escuser/project/boxes/' + box
 #record_path.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
 #record_path.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
 
-record_path = glob.glob(boxpath + '/record_spectra/Event_*/*.out')
+record_path = glob.glob(boxpath + '/record_spectra/Event*/*.out')
 
 #n= len(record_path)
 #n_sample = int(np.round(0.5*n))
@@ -94,6 +94,8 @@ for i in range(len(record_path)):
     raw_file = boxpath + '/uncorrected/Event_'+ eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
     stream = read(raw_file)
     tr = stream[0]
+    
+    print('doing record: ' +  raw_file)
     
     evlon =  tr.stats.sac.evlo #deg
     evlat =  tr.stats.sac.evla #deg
@@ -188,7 +190,8 @@ m1 = np.zeros((I+J, F_bins))
 for f in range(F_bins):
     d = R[:,f]#record for given frequency col
     dT = d.T
-    G_inv = np.linalg.pinv(G, rcond=1e-13)
+    print(f)
+    G_inv = np.linalg.pinv(G, rcond=1e-10)
 #    G_inv = scipy.linalg.pinv(G)
     m1[:,f] = np.dot(G_inv,dT)
 
@@ -215,7 +218,7 @@ outfile_path = boxpath + '/secondo'
 for i in range(I):#for each event
     #make each row into an array
 #    amp = event[i,:]
-    print(eventidlist[i], event[i,:])
+#    print(eventidlist[i], event[i,:])
     amp = np.sqrt(np.power(10.0, event[i,:]))
     outfile = open(outfile_path + '/' + eventidlist[i] + '.out', 'w')
     out = (np.array([freq_list, amp])).T
@@ -235,7 +238,7 @@ for i in range(I):#for each event
 for i in range(J):#for each station
     #make each row into an array
     amp = station[i,:]
-    print(stationlist[i], amp)
+#    print(stationlist[i], amp)
     amp = np.sqrt(np.power(10.0, station[i,:]))
     outfile = open(outfile_path + '/' + stationlist[i] + '.out', 'w')
     out = (np.array([freq_list, amp])).T
@@ -254,20 +257,7 @@ for i in range(J):#for each station
 
 
 ########################################################################
-#constraint = 'Event_'
-#
-##long period spectral level
-#u0 = 1 #displacement, units of cm
-#ml = 2.5 #moment magnitude
-#M0 = 10**(1.5*(0.754*ml + 11.584))# Moment, dyne cm, calculated from Ross 2016
-#sig = 5 #stress drop mega pascals, 1 Pa = 1 dyne/cm2
-#B = 3500 #cm/s
-#fc = B*((sig)/(8.47*M0))**3
-#Brune = (2.*np.pi*freq_list*u0)/(1+(freq_list/fc)**2)
-#
-#print(Brune)
-#
-#
+#constraint_file =  '/Users/escuser/project/boxes/all_paths/constraint_011_08_18_20_26_14.out'
 #constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
 #data = np.genfromtxt(constraint_file)
 #con_spec = data.T[1] #second col
@@ -299,19 +289,19 @@ for i in range(J):#for each station
 #    outfile.write('#freq_bins \t vel_spec_NE_cm \n')
 #    np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
 #    outfile.close()
-#    
-#    
-##    plt.figure(figsize = (14,8))
-##    plt.loglog(freq_list, amp, color='cornflowerblue')
-##    plt.title('station: ' + stationlist[i])
-##    plt.ylim(0.1, 10)
-##    plt.xlabel('frequency (Hz)')
-##    plt.ylabel('velocity spectrum cm/s')
-##    plt.grid()
-##    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
-#
-#
-#
+    
+    
+#    plt.figure(figsize = (14,8))
+#    plt.loglog(freq_list, amp, color='cornflowerblue')
+#    plt.title('station: ' + stationlist[i])
+#    plt.ylim(0.1, 10)
+#    plt.xlabel('frequency (Hz)')
+#    plt.ylabel('velocity spectrum cm/s')
+#    plt.grid()
+#    plt.savefig(outfile_path + '/' + stationlist[i] + '.png')
+
+
+
 
 
 

@@ -9,20 +9,28 @@ plot output from running inversion with all the box data separately for each box
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib as mpl
+
 import numpy as np
 import os.path as path
 import glob
 import dread
 from obspy import read
 import obspy
+from pyproj import Geod
+
+g = Geod(ellps='clrk66')
 
 boxpath = '/Users/escuser/project/boxes/'
 box_list = [('Imperial_Valley', 'PFO_TPFO_PMD'), ('Imperial_Valley', 'SWS_ERR'), ('Riverside', 'FRD_RDM'), ('Salton_Trough', 'SWS_ERR')]
 residual_list = []
 
 
-evpaths = glob.glob(boxpath + 'all_paths_subset/record_spectra/Event_*')
+evpaths = glob.glob(boxpath + 'all_paths/record_spectra/Event_*')
 ev = [x.split('/')[-1] for x in evpaths]
+
+print(len(evpaths))
 
 
 #read in corrected event directories to find event matches
@@ -61,15 +69,19 @@ for i in range(len(box_list)):
             for st in st_list:
                 f = '*' + st + '*.out'
 #                print glob.glob((boxpath + 'all_paths_subset/record_spectra/' + box_events[p] + '/' + f))
-                record_paths.extend(glob.glob(boxpath + 'all_paths_subset/record_spectra/' + box_events[p] + '/' + f))
+                record_paths.extend(glob.glob(boxpath + 'all_paths/record_spectra/' + box_events[p] + '/' + f))
     print(box, len(record_paths))
-    out_dir = boxpath + 'all_paths_subset/secondo/'
+    out_dir = boxpath + 'all_paths/secondo/'
     
     residual = np.zeros((len(record_paths), 50))
 ##################################
 #    residual = np.zeros((10, 50))
 
-
+    mag_list = []
+    dist_list = []
+    az_list = []
+    dep_list = []
+    
     #for each event/station, get the information
     for j in range(len(record_paths)):
 #    for j in range(15):
@@ -81,7 +93,7 @@ for i in range(len(box_list)):
         
         #read in raw data for record info
         #correct for distance
-        raw_file = boxpath + 'all_paths_subset/uncorrected/Event_' + eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
+        raw_file = boxpath + 'all_paths/uncorrected/Event_' + eventid + '/' + network + '_' + station + '_HHN_' + loc + '_' + eventid + '.SAC'
         stream = read(raw_file)
         tr = stream[0]
         
@@ -91,9 +103,18 @@ for i in range(len(box_list)):
         stlon = tr.stats.sac.stlo #deg
         stlat = tr.stats.sac.stla #deg
         stdepth = tr.stats.sac.stdp #km
+        mag = tr.stats.sac.mag
+        az12,az21,dist = g.inv(evlon,evlat,stlon,stlat)
+        mag_list.append(float(mag))
+        dep_list.append(float(evdepth))
+        az_list.append(az12)
+        
+        #az = 
         
         #find distance between event and station
         dist =  dread.compute_rrup(evlon, evlat, evdepth, stlon, stlat, stdepth) #in km
+        dist_list.append(dist) # in km
+        
         #km to cm
         dist = dist*100000
     
@@ -129,40 +150,55 @@ for i in range(len(box_list)):
 #    plt.ylim(-5,5)
     plt.ylabel('residual', fontsize = 15)
     plt.xlabel('frequency (Hz)', fontsize = 15)
+#    plt.colorbar(mag_list)
+    
+    cmin = min(az_list)
+    cmax = max(az_list)
+    print(max(az_list))
+    print(min(az_list))
+
+    
+    norm = mpl.colors.Normalize(vmin = cmin,vmax = cmax)
+    c_m = cm.plasma_r
+    s_m = mpl.cm.ScalarMappable(cmap = c_m, norm=norm)
+    s_m.set_array([])
     
     for k in range(len(residual[:,0])):
-        plt.plot(f_bins, residual[k], alpha = 0.7)
+        plt.plot(f_bins, residual[k], color=s_m.to_rgba(az_list[k]))
         plt.hold(True)
 
+
+
+    plt.colorbar(s_m, label = 'azimuth (event to station)')
     plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
     plt.axhline(y=0.0, color='black', linestyle='-')
     plt.tick_params(axis='both', which='major', labelsize=15)
     plt.tick_params(axis='both', which='both', length = 5, width = 1)
-    plt.ylim(-2,2)
-    plt.savefig(boxpath + 'all_paths_subset/residuals_' + box + '_' + stations + '.png')
+    plt.ylim(-5,5)
+    plt.savefig(boxpath + 'all_paths/residuals_az_' + box + '_' + stations + '.png')
     plt.show()
 
 
 
-fig = plt.figure(figsize = (20,15))
-title = 'log(Record spectra) - log(event*site) entire inversion'
-plt.title(title, fontsize = 20)
-plt.xscale('log')
-plt.xlim(0.1, 50)
-#plt.ylim(-5,5)
-plt.ylabel('residual', fontsize = 15)
-plt.xlabel('frequency (Hz)', fontsize = 15)
-
-for m in range(len(residual_list)):
-    plt.plot(f_bins, residual_list[m], alpha = 0.7)
-    plt.hold(True)
-    
-mean = np.mean(residual_list, axis = 0)
-std = np.std(residual_list, axis = 0)    
-plt.errorbar(f_bins, mean, yerr = std, zorder = 4000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
-plt.axhline(y=0.0, color='black', linestyle='-')
-plt.tick_params(axis='both', which='major', labelsize=15)
-plt.tick_params(axis='both', which='both', length = 5, width = 1)
-plt.ylim(-2,2)
-#plt.savefig(boxpath + 'all_paths_subset/all_boxes.png')
-plt.show()
+#fig = plt.figure(figsize = (20,15))
+#title = 'log(Record spectra) - log(event*site) entire inversion'
+#plt.title(title, fontsize = 20)
+#plt.xscale('log')
+#plt.xlim(0.1, 50)
+##plt.ylim(-5,5)
+#plt.ylabel('residual', fontsize = 15)
+#plt.xlabel('frequency (Hz)', fontsize = 15)
+#
+#for m in range(len(residual_list)):
+#    plt.plot(f_bins, residual_list[m], alpha = 0.7)
+#    plt.hold(True)
+#    
+#mean = np.mean(residual_list, axis = 0)
+#std = np.std(residual_list, axis = 0)    
+#plt.errorbar(f_bins, mean, yerr = std, zorder = 4000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
+#plt.axhline(y=0.0, color='black', linestyle='-')
+#plt.tick_params(axis='both', which='major', labelsize=15)
+#plt.tick_params(axis='both', which='both', length = 5, width = 1)
+#plt.ylim(-4,4)
+#plt.savefig(boxpath + 'all_paths_subset/residuals_entire_inversion.png')
+#plt.show()

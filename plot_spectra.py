@@ -33,14 +33,17 @@ from obspy import read
 #box = 'all_paths_subset'
 #print box
 
-boxpath = '/Users/escuser/project/boxes/all_paths'
+#boxpath = '/Users/escuser/project/boxes/all_paths'
+boxpath = '/Volumes/USGS_Data/project/boxes/all_paths'
 
-record_paths = glob.glob('/Users/escuser/project/boxes/all_paths/record_spectra/Event_*/*.out')#full path for only specified channel
+#record_paths = glob.glob('/Users/escuser/project/boxes/all_paths/record_spectra/Event_*/*.out')#full path for only specified channel
+record_paths = glob.glob('/Volumes/USGS_Data/project/boxes/all_paths/record_spectra/Event_2011_08_18_20_26_1*/*.out')#full path for only specified channel
+#record_paths = glob.glob('/Volumes/USGS_Data/project/boxes/all_paths/record_spectra/Event_*/*.out')#full path for only specified channel
+
+
 #record_paths.extend(glob.glob('/Users/escuser/project/boxes/Imperial_Valley_SWS_ERR/record_spectra/Event_*/*.out'))
 #record_paths.extend(glob.glob('/Users/escuser/project/boxes/Riverside_FRD_RDM/record_spectra/Event_*/*.out'))
 #record_paths.extend(glob.glob('/Users/escuser/project/boxes/Salton_Trough_SWS_ERR/record_spectra/Event_*/*.out'))
-
-
 
 
 #record_paths = glob.glob(boxpath + '/record_spectra/Event_*/*.out')#full path for only specified channel
@@ -52,6 +55,7 @@ station_dir = boxpath + '/secondo/'
 station_files = glob.glob(station_dir + '*.out')
 
 #print record_paths
+print(len(record_paths))
 
 ##L1_norm = L1norm(record_paths)
 ##L1_norm_mean = np.mean(L1_norm, axis=0)
@@ -60,8 +64,8 @@ station_files = glob.glob(station_dir + '*.out')
 ##make a 2d array with each row a record and each col a freq
 #residual = np.zeros((len(record_paths), 50))
 
-#for i in range(len(record_paths)):  ##for every record
-for i in range(32000,32020):  ##for every record
+for i in range(len(record_paths)):  ##for every record
+#for i in range(0,20):  ##for every record
     #North component
     base = path.basename(record_paths[i])
     print(base)
@@ -112,9 +116,9 @@ for i in range(32000,32020):  ##for every record
     
     
 #    plot the station spectra
-    fig = plt.figure(figsize = (18,18))
-    fig.text(0.04, 0.5, 'Velocity amplitude (cm/s)', va='center', rotation='vertical', fontsize = 20)
-    plt.subplot(411)
+    fig = plt.figure(figsize = (16,20))
+    fig.text(0.04, 0.5, 'Velocity amplitude (cm)', va='center', rotation='vertical', fontsize = 20)
+    plt.subplot(311)
     plt.title('record ' + base, fontsize = 15)
     plt.grid()
     plt.loglog(f_bins, record_spec, color = 'b', label = 'record')
@@ -124,7 +128,7 @@ for i in range(32000,32020):  ##for every record
     plt.tick_params(axis='both', which='major', labelsize=15)
     plt.tick_params(axis='both', which='both', length = 5, width = 1)
     
-    plt.subplot(412)
+    plt.subplot(312)
     plt.title('event ' +  eventid, fontsize = 15)
     plt.grid()
     plt.loglog(f_bins, event_spec, color = 'green')
@@ -133,7 +137,7 @@ for i in range(32000,32020):  ##for every record
     plt.tick_params(axis='both', which='both', length = 5, width = 1)
 
     
-    plt.subplot(413)
+    plt.subplot(313)
     plt.title('station ' + station, fontsize = 15)
     plt.grid()
     plt.loglog(f_bins, station_spec, color='r')
@@ -142,19 +146,19 @@ for i in range(32000,32020):  ##for every record
     plt.tick_params(axis='both', which='both', length = 5, width = 1)
 
     
-    plt.subplot(414)
-    plt.title('Residuals', fontsize = 15)
-
-###############################################################################
-#    residual[i:,] = np.log(record_spec) - np.log(station_spec*event_spec)
-    
-    plt.grid()
-    plt.plot(f_bins, np.log(record_spec) - np.log(station_spec*event_spec), color='black')
-    plt.xscale('log')
-#    plt.xlim(0.1, 50)
-    plt.ylim(-10,10)
-    plt.tick_params(axis='both', which='major', labelsize=15)
-    plt.tick_params(axis='both', which='both', length = 5, width = 1)
+#    plt.subplot(414)
+#    plt.title('Residuals', fontsize = 15)
+#
+################################################################################
+##    residual[i:,] = np.log(record_spec) - np.log(station_spec*event_spec)
+#    
+#    plt.grid()
+#    plt.plot(f_bins, np.log(record_spec) - np.log(station_spec*event_spec), color='black')
+#    plt.xscale('log')
+##    plt.xlim(0.1, 50)
+#    plt.ylim(-10,10)
+#    plt.tick_params(axis='both', which='major', labelsize=15)
+#    plt.tick_params(axis='both', which='both', length = 5, width = 1)
 
 
 #    plt.xlim(0.1, 50)
@@ -162,6 +166,6 @@ for i in range(32000,32020):  ##for every record
 #    plt.loglog(f_bins, station_spec*event_spec - L1_norm_std, color='black', ls = '--')
     plt.xlabel('Frequency (Hz)', fontsize = 15)
     plt.savefig(boxpath + '/spectra_plots/' + eventid + '.' + network + '.' +  station + '.png')
-#    plt.close()
+    plt.close()
     plt.show()
 

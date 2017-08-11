@@ -20,6 +20,9 @@ from obspy import read
 import obspy
 from pyproj import Geod
 
+mpl.rcParams.update({'font.size': 22})
+
+
 g = Geod(ellps='clrk66')
 
 boxpath = '/Users/escuser/project/boxes/'
@@ -107,7 +110,7 @@ for i in range(len(box_list)):
         az12,az21,dist = g.inv(evlon,evlat,stlon,stlat)
         mag_list.append(float(mag))
         dep_list.append(float(evdepth))
-        az_list.append(az12)
+        az_list.append(az21)
         
         #az = 
         
@@ -144,39 +147,42 @@ for i in range(len(box_list)):
     
     fig = plt.figure(figsize = (20,15))
     title = 'log(Record spectra) - log(event*site) ' + box + '_' + stations
-    plt.title(title, fontsize = 20)
+    plt.title(title)
     plt.xscale('log')
     plt.xlim(0.1, 50)
 #    plt.ylim(-5,5)
-    plt.ylabel('residual', fontsize = 15)
-    plt.xlabel('frequency (Hz)', fontsize = 15)
+    plt.ylabel('log(residual)')
+    plt.xlabel('frequency (Hz)')
 #    plt.colorbar(mag_list)
     
-    cmin = min(az_list)
-    cmax = max(az_list)
-    print(max(az_list))
-    print(min(az_list))
+    cmin = min(dep_list)
+    cmax = max(dep_list)
+    print(max(dep_list))
+    print(min(dep_list))
 
     
     norm = mpl.colors.Normalize(vmin = cmin,vmax = cmax)
-    c_m = cm.plasma_r
+    c_m = cm.magma_r
     s_m = mpl.cm.ScalarMappable(cmap = c_m, norm=norm)
     s_m.set_array([])
     
     for k in range(len(residual[:,0])):
-        plt.plot(f_bins, residual[k], color=s_m.to_rgba(az_list[k]))
+#        if dist_list[k] < 22:
+        plt.plot(f_bins, residual[k], color=s_m.to_rgba(dep_list[k]))
         plt.hold(True)
 
 
 
-    plt.colorbar(s_m, label = 'azimuth (event to station)')
+    cb = plt.colorbar(s_m)
+    cb.set_label(label = 'depth (km)')
+    cb.ax.tick_params(length = 8, width = 2)
     plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
     plt.axhline(y=0.0, color='black', linestyle='-')
-    plt.tick_params(axis='both', which='major', labelsize=15)
-    plt.tick_params(axis='both', which='both', length = 5, width = 1)
+#    plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 8, width = 2)
     plt.ylim(-5,5)
-    plt.savefig(boxpath + 'all_paths/residuals_az_' + box + '_' + stations + '.png')
-    plt.show()
+    plt.savefig(boxpath + 'all_paths/residuals_depth_' + box + '_' + stations + '.png')
+    plt.close()
 
 
 

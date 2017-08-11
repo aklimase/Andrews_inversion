@@ -257,7 +257,7 @@ for i in range(J):#for each station
 
 
 ########################################################################
-#constraint_file =  '/Users/escuser/project/boxes/all_paths/constraint_011_08_18_20_26_14.out'
+#constraint_file =  '/Users/escuser/project/boxes/all_paths/constraint_2011_08_18_20_26_14.out'
 #constraint_file = '/Users/escuser/project/boxes/secondo_all/' + constraint + '.out'
 #data = np.genfromtxt(constraint_file)
 #con_spec = data.T[1] #second col

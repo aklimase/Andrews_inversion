@@ -65,23 +65,24 @@ for i in range(len(event)):
 #        fc = 30.
         omega0 = ((M0*U)/(4*rho*np.pi*beta**(3.0)))*0.1
         Brune = (2*np.pi*(freq)*omega0)/(1.+((1./fc)*freq)**2.)
-        cf_list.append(spec-Brune)
+        cf_list.append(np.log(spec)-np.log(Brune))
         Brune_list.append(Brune)
         spec_list.append(spec)
 
-#for i in range(len(cf_list)):
-#    fig = plt.figure(figsize = (15,5))
-#    fig.text(0.04, 0.5, 'Velocity amplitude (m/s)', va='center', rotation='vertical', fontsize = 20)
-#    plt.xlim(0.5,70)
-##    plt.loglog(freq, cf_list[i], label = 'correction factor')
-#    plt.loglog(freq , spec_list[i], label = 'event spectra')
-#    plt.grid()
-#    plt.loglog(freq, Brune_list[i], label = 'Brune spectra')
-#    plt.legend()
-#    plt.title(ev_list[i])
-#    plt.tick_params(axis='both', which='major', labelsize=15)
-#    plt.tick_params(axis='both', which='both', length = 5, width = 1)
-#    plt.show()
+for i in range(0,20):
+    fig = plt.figure(figsize = (10,7))
+    plt.ylabel('Velocity amplitude (m/s)', fontsize = 16)
+    plt.xlim(0.5,70)
+#    plt.loglog(freq, cf_list[i], label = 'correction factor')
+    plt.loglog(freq , spec_list[i], label = 'event spectra')
+    plt.grid()
+    plt.loglog(freq, Brune_list[i], label = 'Brune spectra')
+    plt.legend(loc = 'lower right', fontsize = 16)
+    plt.xlabel('Frequency (Hz)', fontsize = 16)
+    plt.title(ev_list[i])
+    plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='both', length = 5, width = 1)
+    plt.show()
 
 
 #for each event, find A/B for all other events
@@ -91,12 +92,12 @@ cfarray = np.array(cf_list)
 sum_list = map(sum,cfarray[:,np.arange(21,50)]**2.0)
 ind = sum_list.index(min(sum_list))
 print(ev_list[ind])
-print(freq, cf_list[ind])
+print(cf_list[ind])
 
 
 outfile = open('/Users/escuser/project/boxes/all_paths/constraint_' + ev_list[ind] + '.out', 'w')
 out = (np.array([freq, cf_list[ind]])).T
-outfile.write('#freq_bins \t cf \n')
+outfile.write('#freq_bins \t log(cf) \n')
 np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
 outfile.close()
 #pick the event with the smallest sum

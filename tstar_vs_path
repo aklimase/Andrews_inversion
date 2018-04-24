@@ -1,0 +1,170 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 16 15:16:02 2017
+
+@author: alexisklimasewski
+
+plotting tstar vs distance or azimuth
+color by other parameter
+also plots distance vs azimuth colored by tstar
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from scipy.stats import pearsonr
+import mpl_toolkits.axisartist.floating_axes as floating_axes
+from matplotlib.projections import PolarAxes
+from mpl_toolkits.axisartist.grid_finder import MaxNLocator
+from matplotlib.transforms import Affine2D
+import mpl_toolkits.axisartist.angle_helper as angle_helper
+import statsmodels
+import statsmodels.stats.power
+from matplotlib.colors import ListedColormap
+import seaborn as sns
+import matplotlib.colors as col
+from matplotlib import rc
+
+#plt.rcParams["font.family"] = "serif"
+mpl.rcParams["font.family"] = "serif"
+mpl.rcParams.update({'font.size': 22})
+mpl.rc('mathtext', default='regular') 
+sns.set_style(sns.axes_style())
+sns.set_style("white")
+sns.axes_style("darkgrid")
+
+#make a list of record name and the tstar calculated
+#for each box, take out events to a station and make a rose diagram of tstars
+#center at station
+top_dir = '/Volumes/USGS_Data/project'
+
+n = 4
+
+boxpath = top_dir + '/boxes/'
+box_list = [('Imperial_Valley', 'PFO_TPFO_PMD'), ('Imperial_Valley', 'SWS_ERR'), ('Riverside', 'FRD_RDM'), ('Salton_Trough', 'SWS_ERR'), ('all_paths', '')]
+box = box_list[n][0] + '_' + box_list[n][1]
+evloc = box_list[n][0]
+#st1 = (box_list[n][1]).split('_')[0]
+#st2 = (box_list[n][1]).split('_')[1]
+
+#stlist = ['BZN', 'CPE', 'CRY', 'FRD', 'KNW', 'LVA2', 'PFO', 'RDM', 'SMER', 'SND', 'SOL', 'TRO', 'WMC', 'ERR', 'PMD', 'SWS']
+
+st1 = 'RDM'
+#for st1 in stlist:
+    #st1 = 'BZN'
+#    print st1
+#    
+infile =  top_dir + '/boxes/all_paths/t*plots/' + box + 'tstar.out'
+data = np.genfromtxt(infile, delimiter='\t', names = True, dtype = None)
+
+tstar = data['tstar']
+dist = data['distance_km']
+station = data['network_station']
+azimuth = data['azimuth']
+
+#when combining two boxes of data with same station
+#infile2 =  top_dir + '/boxes/all_paths/t*plots/' + box_list[1][0] + '_' + box_list[1][1] + '_tstar.out'
+#data2 = np.genfromtxt(infile2, delimiter='\t', names = True, dtype = None)
+#
+#tstar = np.concatenate((data['tstar'], data2['tstar']))
+#dist = np.concatenate((data['distance_km'], data2['distance_km']))
+#station =  np.concatenate((data['network_station'], data2['network_station']))
+#azimuth = np.concatenate((data['azimuth'], data2['azimuth']))
+
+tstar1 = []
+dist1 = []
+station1 = []#with network
+az1 = []
+
+tstar2 = []
+dist2 = []
+station2 = []#with network
+az2 = []
+
+#make two different populations for the two stations
+for i in range(len(tstar)):
+    if station[i].split('_')[1] == st1:
+        tstar1.append(tstar[i])
+        dist1.append(dist[i])
+        station1.append(station[i])
+        az1.append(azimuth[i])
+    else:
+        tstar2.append(tstar[i])
+        dist2.append(dist[i])
+        station2.append(station[i])
+        az2.append(azimuth[i])
+        
+
+fig = plt.subplots(figsize = (20,15))
+mpl.rcParams["font.family"] = "serif"
+plt.title(r'$\mathrm{residual\ t*\ vs.\ path\ distance}$', fontsize = 30)#distance
+plt.ylabel(r'$\mathrm{t*}$', fontsize = 22)
+plt.xlabel(r'$\mathrm{distance (km)}$', fontsize = 22)#distance (km)
+
+
+
+plt.tick_params(axis='both', which='major', labelsize=18, direction = 'in')
+plt.tick_params(axis='both', which='both', length = 8, width = 2, direction = 'in')
+
+#cmap = mpl.cm.autumn_r
+##cmap = col.ListedColormap(sns.color_palette('husl',256)) ##for distance
+#norm = mpl.colors.Normalize(vmin=min(dist), vmax=max(dist))
+#s_m = mpl.cm.ScalarMappable(cmap = cmap, norm=norm)
+#s_m.set_array([])
+
+
+# define the colormap
+cmap = col.ListedColormap(sns.color_palette('husl',3))
+# extract all colors from the .jet map
+cmaplist = [cmap(i) for i in range(cmap.N)]
+# create the new map
+#cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
+
+# define the bins and normalize
+bounds = [-180,-40,90,180]
+norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+
+s_m = mpl.cm.ScalarMappable(cmap = cmap, norm=norm)
+s_m.set_array([])
+
+
+
+#plasma for tstar
+#viridis or husl for az
+#autumn_r for dist
+
+
+# Create the inset axes and use it for the colorbar.
+cbar = plt.colorbar(s_m)
+cbar.set_label(ur"$azimuth$ (\u00b0)", fontsize = 18)#"$azimuth$ (\u00b0)"
+cbar.ax.tick_params(labelsize = 18)
+
+scatter1 = plt.scatter(dist1, tstar1, c = s_m.to_rgba(az1), marker = 'o', s = 30, edgecolors = s_m.to_rgba(az1), label = st1)
+#scatter2 = plt.scatter(az2, tstar2, c = s_m.to_rgba(dist2), marker = 'v', s = 35, edgecolors = s_m.to_rgba(dist2), label = st2)
+#plt.scatter(dist[707], tstar[707], c = 'black')
+
+rval1, pval1 = pearsonr(dist1, tstar1)
+#rval2, pval2 = pearsonr(az2, tstar2)
+power1 = statsmodels.stats.power.tt_solve_power(effect_size = rval1, nobs = len(dist1), alpha = 0.05)
+#power2 = statsmodels.stats.power.tt_solve_power(effect_size = rval2, nobs = len(dist2), alpha = 0.05)
+
+plt.rcParams["font.family"] = "serif"
+
+label1 = 'Pearsons R '  + st1 + ': ' + str(round(rval1,4))
+label2 = 'power ' + st1 +  ': ' + str(round(power1,4))
+#label3 = 'Pearsons R '  + st2 + ': ' + str(round(rval2,4))
+#label4 = 'power ' + st2+ ': ' + str(round(power2,4))
+#str(round(pval,4))
+plt.annotate(label1, xy=(0.15, 0.18), xycoords='figure fraction', fontsize = 18)
+plt.annotate(label2, xy=(0.15, 0.15), xycoords='figure fraction', fontsize = 18)
+#plt.annotate(label3, xy=(0.5, 0.18), xycoords='figure fraction', fontsize = 18)
+#plt.annotate(label4, xy=(0.5, 0.15), xycoords='figure fraction', fontsize = 18)
+
+
+#green_patch = mpatches.Patch(color='orange', label= st2)
+#blue_patch = mpatches.Patch(color='blue', label= st1)
+#plt.legend(handles=[scatter1, scatter2], prop={'size': 16}, loc = 2)
+
+plt.savefig(top_dir + '/boxes/all_paths/t*plots/scatter/t*vsdist_bin_' + st1 + '.png')
+plt.show()

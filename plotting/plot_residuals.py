@@ -20,30 +20,29 @@ from obspy import read
 import obspy
 from pyproj import Geod
 
-mpl.rcParams.update({'font.size': 22})
+top_dir = '/Volumes/USGS_Data/project'
 
+mpl.rcParams.update({'font.size': 22})
 
 g = Geod(ellps='clrk66')
 
-boxpath = '/Users/escuser/project/boxes/'
+boxpath = top_dir + '/boxes/'
 box_list = [('Imperial_Valley', 'PFO_TPFO_PMD'), ('Imperial_Valley', 'SWS_ERR'), ('Riverside', 'FRD_RDM'), ('Salton_Trough', 'SWS_ERR')]
 residual_list = []
-
 
 evpaths = glob.glob(boxpath + 'all_paths/record_spectra/Event_*')
 ev = [x.split('/')[-1] for x in evpaths]
 
 print(len(evpaths))
 
-
 #read in corrected event directories to find event matches
-for i in range(len(box_list)):
+#for i in range(len(box_list)):
+for i in range(3,4):
     box = box_list[i][0]
     stations = box_list[i][1]
     st_list = stations.split('_')
-    localdir = '/Users/escuser/project'
     #read in catalog file
-    catalog = localdir + '/' + box + '_M2.5_USGS_Catalog.txt'
+    catalog = top_dir + '/' + box + '_M2.5_USGS_Catalog.txt'
 
     time_cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1])
     #need to truncate milliseconds
@@ -74,11 +73,10 @@ for i in range(len(box_list)):
 #                print glob.glob((boxpath + 'all_paths_subset/record_spectra/' + box_events[p] + '/' + f))
                 record_paths.extend(glob.glob(boxpath + 'all_paths/record_spectra/' + box_events[p] + '/' + f))
     print(box, len(record_paths))
+    
     out_dir = boxpath + 'all_paths/secondo/'
     
     residual = np.zeros((len(record_paths), 50))
-##################################
-#    residual = np.zeros((10, 50))
 
     mag_list = []
     dist_list = []
@@ -87,7 +85,6 @@ for i in range(len(box_list)):
     
     #for each event/station, get the information
     for j in range(len(record_paths)):
-#    for j in range(15):
         base = path.basename(record_paths[j])
         network, station, channel, loc = base.split('_')[0:4]
         yyyy, month, day, hh, mm, ss = base.split('_')[4:]
@@ -111,9 +108,7 @@ for i in range(len(box_list)):
         mag_list.append(float(mag))
         dep_list.append(float(evdepth))
         az_list.append(az21)
-        
-        #az = 
-        
+
         #find distance between event and station
         dist =  dread.compute_rrup(evlon, evlat, evdepth, stlon, stlat, stdepth) #in km
         dist_list.append(dist) # in km
@@ -135,15 +130,13 @@ for i in range(len(box_list)):
         station_data = np.genfromtxt(out_dir + station + '.out', dtype = float, comments = '#', delimiter = None, usecols = (0,1))
         station_spec = station_data[:,1]
 
-    
         residual[j:,] = np.log(record_spec) - np.log(station_spec*event_spec)
         residual_list.append(np.log(record_spec) - np.log(station_spec*event_spec))
     
     mean = np.mean(residual, axis = 0)
+    print(mean[38:46])
     print('len residual: ', len(residual))
     std = np.std(residual, axis = 0)
-    
-#    residual_list.append(residual)
     
     fig = plt.figure(figsize = (20,15))
     title = 'log(Record spectra) - log(event*site) ' + box + '_' + stations
@@ -153,13 +146,11 @@ for i in range(len(box_list)):
 #    plt.ylim(-5,5)
     plt.ylabel('log(residual)')
     plt.xlabel('frequency (Hz)')
-#    plt.colorbar(mag_list)
     
     cmin = min(dep_list)
     cmax = max(dep_list)
     print(max(dep_list))
     print(min(dep_list))
-
     
     norm = mpl.colors.Normalize(vmin = cmin,vmax = cmax)
     c_m = cm.magma_r
@@ -167,44 +158,17 @@ for i in range(len(box_list)):
     s_m.set_array([])
     
     for k in range(len(residual[:,0])):
-#        if dist_list[k] < 22:
         plt.plot(f_bins, residual[k], color=s_m.to_rgba(dep_list[k]))
         plt.hold(True)
-
-
 
     cb = plt.colorbar(s_m)
     cb.set_label(label = 'depth (km)')
     cb.ax.tick_params(length = 8, width = 2)
     plt.errorbar(f_bins, mean, yerr = std, zorder = 2000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
     plt.axhline(y=0.0, color='black', linestyle='-')
-#    plt.tick_params(axis='both', which='major', labelsize=15)
+    plt.tick_params(axis='both', which='major', labelsize=15)
     plt.tick_params(axis='both', which='both', length = 8, width = 2)
     plt.ylim(-5,5)
-    plt.savefig(boxpath + 'all_paths/residuals_depth_' + box + '_' + stations + '.png')
-    plt.close()
+#    plt.savefig(boxpath + 'all_paths/residual_plots/residuals_depth_' + box + '_' + stations + '.png')
+    plt.show()
 
-
-
-#fig = plt.figure(figsize = (20,15))
-#title = 'log(Record spectra) - log(event*site) entire inversion'
-#plt.title(title, fontsize = 20)
-#plt.xscale('log')
-#plt.xlim(0.1, 50)
-##plt.ylim(-5,5)
-#plt.ylabel('residual', fontsize = 15)
-#plt.xlabel('frequency (Hz)', fontsize = 15)
-#
-#for m in range(len(residual_list)):
-#    plt.plot(f_bins, residual_list[m], alpha = 0.7)
-#    plt.hold(True)
-#    
-#mean = np.mean(residual_list, axis = 0)
-#std = np.std(residual_list, axis = 0)    
-#plt.errorbar(f_bins, mean, yerr = std, zorder = 4000, color = 'black', elinewidth=2, capsize = 10, markeredgewidth=2, fmt='o')
-#plt.axhline(y=0.0, color='black', linestyle='-')
-#plt.tick_params(axis='both', which='major', labelsize=15)
-#plt.tick_params(axis='both', which='both', length = 5, width = 1)
-#plt.ylim(-4,4)
-#plt.savefig(boxpath + 'all_paths_subset/residuals_entire_inversion.png')
-#plt.show()

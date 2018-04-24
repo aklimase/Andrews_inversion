@@ -4,6 +4,9 @@
 Created on Mon Jul 31 15:57:15 2017
 
 @author: escuser
+
+plots uncorrected record for each event at each station
+one plot per event
 """
 
 import matplotlib.pyplot as plt
@@ -13,29 +16,17 @@ import os.path as path
 from obspy import read
 
 
-#box = 'Riverside_FRD_RDM'
+top_dir = '/Volumes/USGS_Data/project'
+
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
+#box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
+box = 'all_paths'
 
-box = 'all_paths_subset'
-
-
-boxpath = '/Users/escuser/project/boxes/' + box
-
-
-#uncorrectedfilepath = glob.glob(boxpath + '/uncorrected/Event_*/*.SAC')#full path for only specified channel
+boxpath = top_dir + '/boxes/' + box
 
 event_dirs = glob.glob(boxpath + '/uncorrected/Event_*')
-#events = []
-#for i in range(len(event_dirs)):
-#    events.append(path.basename(event_dirs[i]))
-#make event directories within corrected local data
-#make a directory for each event
-#for i in range(len(events)):
-#    if not path.exists(boxpath + '/event_plots/' + events[i]):
-#        os.makedirs(boxpath + '/event_plots/' + events[i])
-
 #
 #for each event, plot 
 for i in range(len(event_dirs)):#in this case event paths are all sac files
@@ -64,6 +55,6 @@ for i in range(len(event_dirs)):#in this case event paths are all sac files
             plt.plot(data, color='black')
             plt.title(network + ' ' +  station + ' ' + mag, fontsize = 20)
 
-        print 'saving image: ' + boxpath + '/event_plots/' + event + '.png'
-        plt.savefig(boxpath + '/event_plots/' + event + '.png')
-        plt.close()
+#        print 'saving image: ' + boxpath + '/event_plots/' + event + '.png'
+#        plt.savefig(boxpath + '/event_plots/' + event + '.png')
+        plt.show()

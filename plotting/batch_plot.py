@@ -10,28 +10,24 @@ inputs: path to raw data, cut data, and corrected data
 reads in all three sac files for a record and makes a plot showing all three 
 
 outputs: generates plot to the screen, can change to save images as .png s
-"""
-
-#plot raw data, cut data, and corrected data
-#import matplotlib
-#matplotlib.use('Agg') 
+""" 
 import matplotlib.pyplot as plt
 import glob
 import os
 import os.path as path
 from obspy import read
-from matplotlib.dates import date2num
-import numpy as np
 
-#boxpath = '/Users/escuser/Documents/Alexis_Data/cut_sac_files'
-#box = 'Riverside_FRD_RDM'
+top_dir = '/Volumes/USGS_Data/project'
+
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
+#box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
-box = 'all_paths_subset'
+box = 'all_paths'
+
+boxpath = top_dir + '/boxes/' + box
 
 
-boxpath = '/Users/escuser/project/boxes/' + box
 #event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 
 #cutfilepaths = glob.glob(boxpath + '/cutdata_s/Event_*/*.SAC')
@@ -41,7 +37,7 @@ cut = boxpath + '/cutdata_s/'
 #corr = boxpath + '/corrected/'
 
 #cutfilepath = boxpath + '/cutdata_s'#full path for only specified channel
-correctedfilepath = glob.glob(boxpath + '/corrected/Event_*/*.SAC')#full path for only specified channel
+correctedfilepath = glob.glob(boxpath + '/corrected/Event_2011_04*/*.SAC')#full path for only specified channel
 
 event_dirs = glob.glob(boxpath + '/corrected/Event_*')
 events = []
@@ -125,6 +121,7 @@ for i in range(len(correctedfilepath)):#in this case event paths are all sac fil
     print 'saving image: ' + boxpath + '/plots/' + event + '/' + base.split('.')[0] + '.png'
     plt.savefig(boxpath + '/plots/' + event + '/' + base.split('.')[0] + '.png')
     plt.close()
+    plt.show()
     
     
     

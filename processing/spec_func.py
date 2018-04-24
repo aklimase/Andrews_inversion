@@ -3,13 +3,10 @@
 """
 Created on Mon Jun 26 13:37:49 2017
 
-@author: escuser\\
+@author: escuser
 
 
 """
-
-
-
 
 def cut_swave(infile, cutfile, t1, t2):
     #reads in a sac file
@@ -81,10 +78,12 @@ def cut_swave(infile, cutfile, t1, t2):
 
 def bin_spec(data, frequency, num_bins):
     import numpy as np
-    import matplotlib.pyplot as plt
+#    import matplotlib.pyplot as plt
     #takes in linear frequency and NE velocity spectra (not power!)
 
-    fstart = frequency[1]
+    fstart = frequency[0]#1
+    if fstart == 0:
+        fstart = frequency[1]
     fend = frequency[-1]
     
     #index array for bins
@@ -96,6 +95,7 @@ def bin_spec(data, frequency, num_bins):
     #first point
     #mean of first point and index of point with f less than or equal to c(1)
     index = (frequency <= c[1]).argmin()
+#    print index
     upper[0] = index
     lower[0] = 0
     binned_data[0] = np.mean(data[0:index])
@@ -106,7 +106,10 @@ def bin_spec(data, frequency, num_bins):
     binned_data[l-1] = np.mean(data[index:-1])
     for i in range(1,l-1):
         lb = (frequency >= c[i-1]).argmax()
-        ub = (frequency <= c[i+1]).argmin()
+        if (frequency <= c[i+1]).argmin() == 0:
+            ub = -1
+        else:
+            ub = (frequency <= c[i+1]).argmin()
         lower[i] = lb
         upper[i] = ub
         #add an if statement if lower = upper
@@ -114,24 +117,6 @@ def bin_spec(data, frequency, num_bins):
             binned_data[i] = data[lb]
         else:
             binned_data[i] = np.mean(data[lb:ub])
-    
-    #make plot to check
-#    plt.figure(figsize = (10,8))
-#    plt.loglog(frequency, data, color='cornflowerblue', zorder = 1)#linear so plot in logspace
-#    
-#    for i in range(0,l):
-#        x1 = frequency[int(lower[i])]
-#        x2 = frequency[int(upper[i])]
-#        y1 = binned_data[i]
-#        y2 = binned_data[i]
-#        plt.plot((x1,x2),(y1,y2), color = 'red')
-#        
-#    plt.scatter(c, binned_data, color = 'black', zorder = 2, marker = 'o')
-#    plt.plot(c, binned_data, color = 'black')
-#    plt.xlabel('frequency (Hz)')
-#    plt.ylabel('velocity spectrum (NE)')
-#        
-#    plt.show()
     
     return c, binned_data
 

@@ -1,0 +1,78 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 20 09:19:23 2018
+
+@author: temp
+"""
+
+import numpy as np
+import dread
+import cPickle as pickle
+from temp_obj import Tobj
+
+
+topdir = '/Volumes/USGS_Data/project/'
+
+delta_f = topdir + 'IASP91_vs_FANG16_1D.txt'
+delta_data = np.genfromtxt(delta_f,delimiter= [7,8,8,8], dtype = None, names = True, encoding = None)
+del_lat = delta_data['lat']
+del_lon = delta_data['lon']
+del_dep = delta_data['depth']
+
+mean_del_lat = np.mean(del_lat)
+median_del_lat = np.median(del_lat)
+std_del_lat = np.std(del_lat)
+
+mean_del_lon = np.mean(del_lon)
+median_del_lon = np.median(del_lon)
+std_del_lon = np.std(del_lon)
+
+mean_del_dep = np.mean(del_dep)
+median_del_dep = np.median(del_dep)
+std_del_dep = np.std(del_dep)
+
+tpath = topdir + 'boxes/all_paths/path_tstar_evlocations.pckl'
+tfile = open(tpath, 'r')
+
+tobj = pickle.load(tfile)
+tfile.close()
+
+mean_lat = np.mean(tobj.evlat)
+mean_lon = np.mean(tobj.evlon)
+mean_dep = np.mean(tobj.evdep)
+
+
+
+#match_loc = topdir + 'boxes/all_paths/t*plots/pathterms/match_pathresid_5km.txt'
+#loc_data = np.genfromtxt(match_loc,delimiter= '\t', dtype = None, names = True, encoding = None, usecols = (2,3,4))
+#
+#mean_lat = np.mean(loc_data['Lat_cat'])
+##median_lat = np.median(loc_data['Lat_cat'])
+##std_lat = np.std(loc_data['Lat_cat'])
+#
+#mean_lon = np.mean(loc_data['Lon_cat'])
+##median_lon = np.median(loc_data['Lon_cat'])
+##std_lon = np.std(loc_data['Lon_cat'])
+#
+#mean_dep = np.mean(loc_data['Depth_cat'])
+##median_dep = np.median(loc_data['Depth_cat'])
+##std_dep = np.std(loc_data['Depth_cat'])
+
+#errors witht the mean
+print 'Distance between mean event location and mean relocation', dread.compute_rrup(mean_lon, mean_lat, mean_dep, mean_lon + mean_del_lon, mean_lat + mean_del_lat, -1*(mean_dep + mean_del_dep)) #in km
+print 'Distance between mean event location and mean relocation', dread.compute_rrup(mean_lon, mean_lat, mean_dep, mean_lon - mean_del_lon, mean_lat - mean_del_lat, -1*(mean_dep - mean_del_dep)) #in km
+
+
+print 'Distance between mean event location and mean relocation 1 sigma above', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon + std_del_lon), (mean_lat + mean_del_lat + std_del_lat), -1*(mean_dep + mean_del_dep + std_del_dep)) #in km
+print 'Distance between mean event location and mean relocation 1 sigma below', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon - std_del_lon), (mean_lat + mean_del_lat - std_del_lat), -1*(mean_dep + mean_del_dep - std_del_dep)) #in km
+
+print 'Distance between mean event location and mean relocation 2 sigma above', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon + 2*std_del_lon), (mean_lat + mean_del_lat + 2*std_del_lat), -1*(mean_dep + mean_del_dep + 2*std_del_dep)) #in km
+print 'Distance between mean event location and mean relocation 2 sigma below', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon - 2*std_del_lon), (mean_lat + mean_del_lat - 2*std_del_lat), -1*(mean_dep + mean_del_dep - 2*std_del_dep)) #in km
+
+print 'Distance between mean event location and mean relocation 3 sigma above', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon + 3*std_del_lon), (mean_lat + mean_del_lat + 3*std_del_lat), -1*(mean_dep + mean_del_dep + 3*std_del_dep)) #in km
+print 'Distance between mean event location and mean relocation 3 sigma below', dread.compute_rrup(mean_lon, mean_lat, mean_dep, (mean_lon + mean_del_lon - 3*std_del_lon), (mean_lat + mean_del_lat - 3*std_del_lat), -1*(mean_dep + mean_del_dep - 3*std_del_dep)) #in km
+
+
+#dist_sigma_up = dread.compute_rrup(t_evlon[l], t_evlat[l], t_evdep[l], r_evlon[m], r_evlat[m], -1*r_evdep[m]) #in km
+#dist_sigma_down = dread.compute_rrup(t_evlon[l], t_evlat[l], t_evdep[l], r_evlon[m], r_evlat[m], -1*r_evdep[m]) #in km

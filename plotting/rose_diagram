@@ -1,0 +1,165 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Oct 16 20:28:25 2017
+
+@author: alexisklimasewski
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from scipy.stats import pearsonr
+import mpl_toolkits.axisartist.floating_axes as floating_axes
+from matplotlib.projections import PolarAxes
+from mpl_toolkits.axisartist.grid_finder import MaxNLocator
+from matplotlib.transforms import Affine2D
+import mpl_toolkits.axisartist.angle_helper as angle_helper
+import statsmodels
+
+
+plt.rcParams["font.family"] = "serif"
+mpl.rcParams.update({'font.size': 22})
+
+#make a list of record name and the tstar calculated
+#for each box, take out events to a station and make a rose diagram of tstars
+#center at station
+top_dir = '/Volumes/USGS_Data/project'
+
+n = 2
+
+boxpath = top_dir + '/boxes/'
+box_list = [('Imperial_Valley', 'PFO_TPFO_PMD'), ('Imperial_Valley', 'SWS_ERR'), ('Riverside', 'FRD_RDM'), ('Salton_Trough', 'SWS_ERR'), ('all_paths', '')]
+box = box_list[n][0] + '_' + box_list[n][1]
+evloc = box_list[n][0]
+st1 = (box_list[n][1]).split('_')[0]
+st2 = (box_list[n][1]).split('_')[1]
+
+#st1 = 'PFO'
+
+infile =  top_dir + '/boxes/all_paths/t*plots/' + box + '_tstar.out'
+data = np.genfromtxt(infile, delimiter='\t', names = True, dtype = None)
+
+tstar = data['tstar']
+dist = data['distance_km']
+station = data['network_station']
+azimuth = data['azimuth']
+
+##when combining two boxes of data with same station
+##infile2 =  top_dir + '/boxes/all_paths/t*plots/' + box_list[1][0] + '_' + box_list[1][1] + '_tstar.out'
+##data2 = np.genfromtxt(infile2, delimiter='\t', names = True, dtype = None)
+##
+##tstar = np.concatenate((data['tstar'], data2['tstar']))
+##dist = np.concatenate((data['distance_km'], data2['distance_km']))
+##station =  np.concatenate((data['network_station'], data2['network_station']))
+##azimuth = np.concatenate((data['azimuth'], data2['azimuth']))
+#
+tstar1 = []
+dist1 = []
+station1 = []#with network
+az1 = []
+
+tstar2 = []
+dist2 = []
+station2 = []#with network
+az2 = []
+
+#make two different populations for the two stations
+for i in range(len(tstar)):
+    if station[i].split('_')[1] == st1:
+        tstar1.append(tstar[i])
+        dist1.append(dist[i])
+        station1.append(station[i])
+        az1.append(azimuth[i])
+    else:
+        tstar2.append(tstar[i])
+        dist2.append(dist[i])
+        station2.append(station[i])
+        az2.append(azimuth[i])
+
+
+#look at specific station
+#st = 'AZ_PFO'
+#st = 'CI_ERR'
+#st = 'CI_PMD'
+#st = 'CI_SWS'
+st = 'AZ_FRD'
+#st = 'AZ_RDM'
+#st = station1[0]
+
+t = []
+az = []
+d = []
+
+for i in range(len(station)):
+    if station[i] == st:
+        t.append(tstar[i])
+        az.append(azimuth[i])
+        d.append(dist[i])
+        
+fig = plt.figure(figsize=(15, 15))
+rect = 111
+
+#radius = d*np.arange(0,1,0.1)
+#theta = (az[0]*np.ones(10))
+
+tr = Affine2D().scale(np.pi/180., 1.) + PolarAxes.PolarTransform()
+grid_locator1 = angle_helper.LocatorD(4)#5
+tick_formatter1 = angle_helper.FormatterDMS()
+grid_locator2 = MaxNLocator(4)
+
+grid_helper = floating_axes.GridHelperCurveLinear(tr,
+                                extremes=(270, 360, 0, max(d)),
+                                grid_locator1=grid_locator1,
+                                grid_locator2=grid_locator2,
+                                tick_formatter1=tick_formatter1,
+                                tick_formatter2=None,
+                                )
+
+ax1 = floating_axes.FloatingSubplot(fig, rect, grid_helper=grid_helper)
+fig.add_subplot(ax1)
+plt.suptitle('t* plotted with azimuth for events to '+ st, fontsize = 20)
+# ' and ' + box_list[1][0]
+
+ticklabels = True
+thlabel = ur"$azimuth$ (\u00b0)"
+rlabel = ur"$dist$ $(km)$"
+
+ax1.grid()
+
+# adjust x axis (theta):
+ax1.axis["bottom"].set_visible(False)
+ax1.axis["top"].set_axis_direction("bottom") # tick direction
+ax1.axis["top"].toggle(ticklabels=ticklabels, label=bool(thlabel))
+ax1.axis["top"].major_ticklabels.set_axis_direction("top")
+ax1.axis["top"].label.set_axis_direction("top")
+
+ax1.axis["left"].set_axis_direction("bottom") # tick direction
+ax1.axis["right"].set_axis_direction("top") # tick direction
+ax1.axis["left"].toggle(ticklabels=ticklabels, label=bool(rlabel))
+
+ax1.axis["top"].label.set_text(thlabel)
+ax1.axis["left"].label.set_text(rlabel)
+
+
+aux_ax = ax1.get_aux_axes(tr)
+
+aux_ax.patch = ax1.patch
+ax1.patch.zorder = 0.8 
+
+cmap = mpl.cm.plasma_r
+norm = mpl.colors.Normalize(vmin = min(tstar), vmax= max(tstar))#(vmin=-0.078872, vmax=0.08037098)
+s_m = mpl.cm.ScalarMappable(cmap = cmap, norm=norm)
+s_m.set_array([])
+
+for i in range(len(az)):
+    theta = (az[i]*np.ones(10))
+    radius = d[i]*np.arange(0,1,0.1)
+    aux_ax.plot(theta, radius, color = s_m.to_rgba(t[i]), lw = 1.0)
+
+
+plt.colorbar(s_m, label = r'$t*$')
+
+
+plt.savefig(top_dir + '/boxes/all_paths/t*plots/rose/rose_'+ evloc + '_' + st + '_self_scale.png')
+plt.show()

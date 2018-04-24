@@ -15,25 +15,21 @@ import os.path as path
 import numpy as np
 import obspy
 from obspy import read
-#from obspy import core.utcdatetime
+
+top_dir = '/Volumes/USGS_Data/project'
 
 #box = 'Riverside_FRD_RDM'
 #box = 'Salton_Trough_SWS_ERR'
 #box = 'Imperial_Valley_PFO_TPFO_PMD'
 #box = 'Imperial_Valley_SWS_ERR'
-
 box = 'all_paths'
 
-
-#boxpath = '/net/anzanas.wr.usgs.gov/data/users/alexis/ANZA_boxes/' + box
-boxpath = '/Users/escuser/project/boxes/' + box
+boxpath = top_dir + '/boxes/' + box
 
 event_dirs = glob.glob(boxpath + '/uncorrected_local/Event_*')
 
-localdir = '/Users/escuser/project'
-
 #read in catalog file
-catalog = localdir + '/all_paths_M2.5_USGS_Catalog.txt'
+catalog = top_dir + '/all_paths_M2.5_USGS_Catalog.txt'
 
 time_cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1])
 #need to truncate milliseconds
@@ -47,25 +43,14 @@ for i in range(len(event_dirs)):
 #make event directories within corrected local data
 #make a directory for each event
 for i in range(len(events)):
-    if not path.exists(localdir + '/boxes/' + box + '/uncorrected/' + events[i]):
-        os.makedirs(localdir + '/boxes/' + box + '/uncorrected/' + events[i])
-        
-#station file
-network_stations = glob.glob(boxpath + '/*.stations')
-print(network_stations)
-for i in range(len(network_stations)):
-    stations = network_stations[i]
-    data = np.genfromtxt(stations, delimiter = ' ', comments ="#", dtype = None)
-    print(data[0][0])
+    if not path.exists(boxpath + '/uncorrected/' + events[i]):
+        os.makedirs(boxpath + '/uncorrected/' + events[i])
 
-#
 ##for each event directory, find match in catalog file
 for i in range(len(events)):
     base = path.basename(events[i])
     (yyyy, month, day, hh, mm, ss) = [int(s) for s in base.split('_')[1:]]
     time = obspy.core.utcdatetime.UTCDateTime(yyyy, month, day, hh, mm, ss)
-#    print(time)
-#    print(cat_dict[str(time)])
 #    #check and see if ev
     if time in time_cat:
         ind = time_cat.index(time)
@@ -86,5 +71,5 @@ for i in range(len(events)):
         tr.stats.sac.nzmin = mm
         tr.stats.sac.nzsec = ss
         tr.stats.sac.nzmsec = 0
-        #station location
-        stream.write(localdir + '/boxes/' + box + '/uncorrected/' + events[i] + '/' + sac_base, format='SAC')
+        #station info included in SAC files
+        stream.write(boxpath + '/uncorrected/' + events[i] + '/' + sac_base, format='SAC')

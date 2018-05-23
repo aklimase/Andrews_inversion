@@ -27,3 +27,30 @@ class Tobj(object):
 def make_tobj(evid, evlat, evlon, evdep, tstar, dist, station, azimuth):
     tobj = Tobj(evid, evlat, evlon, evdep, tstar, dist, station, azimuth)
     return tobj
+
+
+class source_obj(object):
+    evid = ""
+    m_cat = 0
+    m_fit = 0
+    lat = 0
+    lon = 0
+    depth = 0
+    log_stressdrop = 0
+    log_stressdrop_sig = 0 
+    time = ''
+    
+    def __init__(self, evid, m_cat, m_fit, lat, lon, depth, log_stressdrop, log_stressdrop_sig, time):
+        self.evid = evid
+        self.m_cat = m_cat
+        self.m_fit = m_fit
+        self.lat = lat
+        self.lon = lon
+        self.depth = depth
+        self.log_stressdrop = log_stressdrop
+        self.log_stressdrop_sig = log_stressdrop_sig
+        self.time = time
+
+def make_source_obj(m_cat, m_fit, lat, lon, depth, log_stressdrop, log_stressdrop_sig, time):
+    s = source_obj(m_cat, m_fit, lat, lon, depth, log_stressdrop, log_stressdrop_sig, time)
+    return s

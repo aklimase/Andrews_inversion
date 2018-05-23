@@ -22,12 +22,17 @@ mpl.rcParams['figure.subplot.hspace'] = 0.0
 mpl.rcParams['figure.subplot.wspace'] = 0.0
 mpl.rcParams['font.size'] = 20
 
+#
+constraint = '2013_11_30_11_36_35'
+#constraint = '2010_05_25_19_49_51'
+#secondo_dir = 'secondo_rebin3_constrained_2010_05_25_19_49_51'
 
-constraint = '2010_05_25_19_49_51'
+
 
 top_dir = '/Volumes/USGS_Data/project/'
 #st_dir = top_dir + 'boxes/all_paths/old_inversion_runs/secondo_constrained_Brune'
 st_dir = top_dir + 'boxes/all_paths/secondo_rebin3_constrained_' + constraint
+
 
 station_files = glob.glob(st_dir + '/[!2]*.out')
 #t_file = top_dir + 'tstar/site/old_inversion_cm/tstar_site.out'
@@ -39,7 +44,7 @@ t_file = top_dir + 'tstar/site/secondo_rebin3_constrained_' + constraint + '/tst
 #f2 = 48
 
 f1 = 28
-f2 = 69
+f2 = 70
 
 def main():
     st_list = [station_files[i].split('/')[7].split('.')[0] for i in range(len(station_files))]
@@ -54,7 +59,7 @@ def main():
     
     nrows = 4
     ncols = 4
-    fig, axes = plt.subplots(nrows, ncols, figsize = (20,12))
+    fig, axes = plt.subplots(nrows, ncols, figsize = (20,14))
 #    plt.tight_layout(pad=1, w_pad=1, h_pad=1.0)
     plt.subplots_adjust(wspace=0, hspace=0)
     fig.text(0.47, 0.05, 'frequency (Hz)', va='center')
@@ -99,12 +104,17 @@ def plot_spectra(ax, x1, y1, x2, y2, name, t, A, L2):
     ax.grid(linestyle='--', linewidth=0.5, color = 'gray')
     ax.tick_params(axis='both', which='major', labelsize=18)
     ax.tick_params(axis='both', which='both', length = 5, width = 1)
-    ax.text(0.55, 0.01, name)
-    ax.text(0.55, 0.003, 'A0: ' + str(A))
-    ax.text(0.55, 0.001, r'$\kappa$: ' + str(t))
-    ax.text(4, 0.001, 'L2: ' + str(L2))
+    
+#    ax.text(0.55, 0.01, name)
+#    ax.text(0.55, 0.003, 'A0: ' + str(A))
+#    ax.text(0.55, 0.001, r'$\kappa_0$: ' + str(t))
+    
+#    ax.text(4, 0.001, 'L2: ' + str(L2))
     ax.set_xlim(0.5,70)
-    ax.set_ylim(0.0005,3)#1.4
+    ax.set_ylim(0.0005,1.6)#1.4
+    
+    ax.annotate(name + '\n' + 'A0: ' + str(A) + '\n' + r'$\kappa_0$: ' + str(t) + '\n' + 'L2: ' + str(L2), xy=(0.02, 0.05), xycoords='axes fraction', bbox=dict(facecolor='white', edgecolor='black', boxstyle='square,pad=0.1'))
+
 
 
 main()

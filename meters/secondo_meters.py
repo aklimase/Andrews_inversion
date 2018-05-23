@@ -22,6 +22,7 @@ import obspy
 from obspy import read    
 import dread
 import time
+import random
 
 #read in the cut and corrected spectra = records
 #records are in cm/s
@@ -30,15 +31,18 @@ import time
 
 top_dir = '/Volumes/USGS_Data/project'
 
-##############################################################################
+#############################################################################
 #read in Joe's event list
-#Joe_ev = top_dir + '/catalogs/Joe_evlist.txt'
-#events = np.genfromtxt(Joe_ev, dtype = None, comments = '#', delimiter = None, names = True, encoding = None)
-#ev_list = events['evid']
+Joe_ev = top_dir + '/catalogs/Joe_evlist.txt'
+events = np.genfromtxt(Joe_ev, dtype = None, comments = '#', delimiter = None, names = True, encoding = None)
+ev_list = events['evid']
 
 box = 'all_paths'
 boxpath = top_dir + '/boxes/' + box
-outfile_path = boxpath + '/secondo_rebin3'
+#outfile_path = boxpath + '/secondo_rebin3'
+
+b = 1000
+outfile_path = boxpath + '/secondo_random'
 
 
 #find events in catalog that are in mag range
@@ -56,11 +60,25 @@ outfile_path = boxpath + '/secondo_rebin3'
 
 
 
-record_path = glob.glob(boxpath + '/record_spectra_rebin3/Event_*/*.out')
-        
+#record_path = glob.glob(boxpath + '/record_spectra_rebin3/Event_*/*.out')
+
+ev = glob.glob(boxpath + '/record_spectra_rebin3/Event*')
+n = len(ev)
+rand = random.sample(range(0,n), b)
+#list of events
+record_path = []
+for i in rand:
+    record_path.extend(glob.glob(ev[i] + '/*.out'))
+
+##exclude stations Joe doesn't have
 #record_path = []
-#for ev in event:
-#    record_path.extend(glob.glob(boxpath + '/record_spectra_rebin/Event_' + ev + '/*.out'))
+#st_not = ['CPE', 'PMD', 'SMER', 'SND', 'SOL']
+#for ev in ev_list:
+#    l = []
+#    for s in st_not:
+#        l.extend(glob.glob(boxpath + '/record_spectra_rebin3/Event_' + ev + '/*' + s + '*.out'))
+#    record_path.extend(set(glob.glob(boxpath + '/record_spectra_rebin3/Event_' + ev + '/*.out'))- set(l))
+
 ###############################################################################
 
 print 'Number of records: ', len(record_path)

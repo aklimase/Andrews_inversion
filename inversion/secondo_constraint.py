@@ -25,8 +25,8 @@ boxpath = top_dir + '/boxes/' + box
 
 #######################################################
 secondo_dir = 'secondo_rebin3'
-constraint_file =  boxpath + '/constraint_rebin3_2010_05_25_19_49_51.out'
-outfile_path = boxpath + '/secondo_rebin3_constrained_2010_05_25_19_49_51'
+constraint_file =  boxpath + '/constraint_rebin3_2013_11_30_11_36_35.out'
+outfile_path = boxpath + '/secondo_rebin3_constrained_2013_11_30_11_36_35'
 #########################################################
 
 con = np.genfromtxt(constraint_file)

@@ -21,8 +21,8 @@ plot_defaults()
 
 #change these magnitude upper and lower bounds
 #these are for Joe's ~3 eventds
-mag_ub = 3.06#2.77
-mag_lb = 3.06#2.75
+mag_ub = 6#2.77
+mag_lb = 2.4#2.75
 beta = 3500. #3500m/s
 stressdrop = 5e6 #pascals
 U = 0.63#0.63
@@ -33,6 +33,8 @@ box = 'all_paths'
 boxpath = top_dir + '/boxes/' + box
 ##############################################
 secondo_dir = 'secondo_rebin3'
+#secondo_dir = 'secondo_random'
+
 writefile = 'no' #or no
 #############################################
 
@@ -41,7 +43,7 @@ event_spectra = glob.glob(event_spectra_dir + '[2]*.out')
 
 #find events in catalog that are in mag range
 catalog = top_dir + '/catalogs/all_paths_M2.5_USGS_Catalog.txt'
-cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1,10])
+cat = np.genfromtxt(catalog, comments = '#', delimiter = '|', dtype = None, usecols = [1,10], encoding = None)
 event = []
 magl = []
 for i in range(len(cat)):
@@ -54,6 +56,7 @@ for i in range(len(cat)):
        
 #compute Brune spectra for all of the events in directory
 cf_list = []
+cf2_list = []
 Brune_list = []
 spec_list = []
 ev_list = []
@@ -65,6 +68,7 @@ spec_demean_list_log = []
 Brune_demean_list_log = []
  
 for i in range(len(event)):
+#for i in range(0,500):
     f = event_spectra_dir + event[i] + '.out'
     if f in event_spectra:
         ev_list.append(event[i])
@@ -75,30 +79,64 @@ for i in range(len(event)):
         ml = magl[i]
         #if less than 3, convert local magnitude to moment magnitude
         if ml < 3.0:
-            M = 0.884 + 0.667*ml#0.884 + 0.667*ml
+            M = 0.884 + 0.754*ml#0.884 + 0.667*ml, 754
         else:
             M = magl[i]
         #compute Brune in SI units
         #Moment from the moment magnitude
-        M0 = 10.**((3./2.)*M + 9.1)
+        M0 = 10.**((3./2.)*M + 9.1)#9.1
         #corner frequency
         fc = beta*(stressdrop/(8.47*M0))**(1./3.)
-        print fc
+#        print fc
         omega0 = (M0*U)/(4.*rho*np.pi*(beta**(3.0)))
         #brune spectra over all frequencies
         Brune = (2.*np.pi*(freq)*omega0)/(1.+((1./fc)*freq)**2.)
         #stay in meters
-
-        cf_list.append(np.log10(spec)-np.log10(Brune))
+        
+        shift1 = np.mean(Brune[27:70])
+        shift2 = np.mean(spec[27:70])
+#
+        cf_list.append(np.log10(spec/shift2)-np.log10(Brune/shift1))
+        cf2_list.append(np.log10(spec)-np.log10(Brune))
 
         Brune_list.append(Brune)
         spec_list.append(spec)
 
+#for each event, find A/B for all other events
+#sum up all A/B over freqencies we are fitting
+cfarray = np.array(cf_list)
+#ind = cfarray.index(0.5)
+sum_list = map(sum,cfarray[:,np.arange(27,70)]**2.0) ###found the best fit from 1-32.7Hz
+
+shift_array = np.array(cf2_list)
+shift_list =  map(np.mean, shift_array[:,np.arange(27,70)])
+print 'mean and median of spectra-brune: ', np.mean(shift_list), np.median(shift_list)
+
+fig = plt.figure(figsize = (15,12))
+plt.loglog(freq[27:70], np.median(shift_array, axis = 0)[27:70])
+plt.ylabel('median shift (event-Brune)', fontsize = 16)
+plt.xlabel('Frequency (Hz)', fontsize = 16)
+plt.title('median difference between unconstrained event spectra and calculated Brune', fontsize = 20)
+plt.xlim(0.5,70)
+#plt.ylim(0.1,2)
+plt.tick_params(axis='both', which='major', labelsize=15)
+plt.tick_params(axis='both', which='both', length = 5, width = 1)
+plt.grid()
+plt.text(0.7, .2, 'Avg log(diff) 1-32.7Hz: ' + str(round(np.median(shift_array.mean(axis = 0)[27:70]),3)), fontsize = 16)
+#plt.savefig('/Volumes/USGS_Data/project/source_params/shift_med_all.png')
+plt.show()
+
+##find the minimum in log space
+ind = sum_list.index(min(sum_list))
+print(ev_list[ind])
+
+#ind = ev_list.index('2012_10_28_07_47_03')
         
 
-for i in range(len(ev_list)):
+for i in range(ind, ind+1):
+    print magl[i]
     fig = plt.figure(figsize = (10,7))
-    plt.ylabel('Velocity amplitude (m^2)', fontsize = 16)
+    plt.ylabel('Velocity amplitude (m)', fontsize = 16)
     plt.xlim(0.5,70)
 #    plt.ylim(-1,1)
     plt.loglog(freq , spec_list[i], color = 'green', label = 'event spectra')
@@ -111,25 +149,17 @@ for i in range(len(ev_list)):
     plt.title(ev_list[i])
     plt.tick_params(axis='both', which='major', labelsize=15)
     plt.tick_params(axis='both', which='both', length = 5, width = 1)
-    plt.text(0.7, .1, 'Avg log(diff) 0.1-36Hz: ' + str(round(np.mean(cf_list[i][20:70]),3)), fontsize = 16)
+    plt.text(0.7, .1, 'Median log(diff) 1-32.7 Hz: ' + str(round(np.mean(cf2_list[i][20:70]),3)), fontsize = 16)
 #    plt.savefig(boxpath + '/secondo_Joe/Demeaned_' + ev_list[i] + '.png')
     plt.show()
 
 
-#for each event, find A/B for all other events
-#sum up all A/B over freqencies we are fitting
-cfarray = np.array(cf_list)
-#ind = cfarray.index(0.5)
-sum_list = map(sum,cfarray[:,np.arange(20,70)]**2.0) ###found the best fit from 0.5-36Hz
-print sum_list
-##find the minimum in log space
-ind = sum_list.index(min(sum_list))
-print(ev_list[ind])
+
 
 #write the constraint file in linear space to agree with the event and station spectra
 if writefile == 'yes':
     outfile = open(boxpath + '/constraint_rebin3_' + ev_list[ind] + '.out', 'w')
-    out = (np.array([freq, (10.**(cf_list[ind]))]).T)
+    out = (np.array([freq, (10.**(cf2_list[ind]))]).T)
     outfile.write('#freq_bins \t cf_m \n')
     np.savetxt(outfile, out, fmt=['%E', '%E'], delimiter='\t')
     outfile.close()

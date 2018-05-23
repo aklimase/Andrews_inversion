@@ -20,7 +20,7 @@ from scipy.stats import pearsonr
 import statsmodels.stats.power
 import matplotlib.patches as mpatches
 import cPickle as pickle
-from temp_obj import Tobj
+from obj import Tobj
 
 
 plt.rcParams["font.family"] = "serif"
